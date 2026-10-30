@@ -1,0 +1,949 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Vocab Conquest</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one focused column. Home is a dashboard (rank, plan, modes, territory map);
+   every study mode takes over the screen with a bottom dock for its actions. */
+:root{
+  --bg:#eceff4; --surface:#ffffff; --surface2:#f4f6fa; --ink:#121722; --muted:#586174; --line:#d6dbe6;
+  --accent:#2547c9; --accent-ink:#ffffff; --accent-soft:#e2e8fb;
+  --good:#17804f; --good-soft:#d9f1e4; --warn:#9a5806; --warn-soft:#f9e9cc; --bad:#b8352e; --bad-soft:#fbe0dd;
+  --t0:#e2e6ee; --t0-ink:#3a4255; --t1:#f6e3b4; --t1-ink:#3d2a05; --t2:#bfe3cf; --t2-ink:#0f3d27; --t3:#e9bb4e; --t3-ink:#2e1f02;
+  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --font-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1220; --surface:#151c2e; --surface2:#1b2338; --ink:#e8ecf6; --muted:#9aa5bc; --line:#2a3350;
+    --accent:#86a0ff; --accent-ink:#0d1220; --accent-soft:#1f2a52;
+    --good:#5fd29a; --good-soft:#14382a; --warn:#f0b95a; --warn-soft:#3a2c10; --bad:#ff8f86; --bad-soft:#3d1b19;
+    --t0:#232c45; --t0-ink:#aab4cb; --t1:#54431c; --t1-ink:#f6e7c4; --t2:#1b5a3d; --t2-ink:#d6f5e5; --t3:#dcae3d; --t3-ink:#1b1406;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1220; --surface:#151c2e; --surface2:#1b2338; --ink:#e8ecf6; --muted:#9aa5bc; --line:#2a3350;
+  --accent:#86a0ff; --accent-ink:#0d1220; --accent-soft:#1f2a52;
+  --good:#5fd29a; --good-soft:#14382a; --warn:#f0b95a; --warn-soft:#3a2c10; --bad:#ff8f86; --bad-soft:#3d1b19;
+  --t0:#232c45; --t0-ink:#aab4cb; --t1:#54431c; --t1-ink:#f6e7c4; --t2:#1b5a3d; --t2-ink:#d6f5e5; --t3:#dcae3d; --t3-ink:#1b1406;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5;
+  padding-block:14px 40px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body.has-dock{padding-bottom:150px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:16px;min-width:0}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--font-display);margin:0;font-weight:700;text-wrap:balance;letter-spacing:-.01em}
+.mono{font-family:var(--font-mono)}
+.label{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;min-width:0}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;min-width:0}
+.spread{justify-content:space-between}
+.grow{flex:1 1 0;min-width:0}
+
+/* top bar */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-family:var(--font-display);font-size:22px;font-weight:700;letter-spacing:-.02em}
+.brand small{display:block;font-family:var(--font-mono);font-size:11px;font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.sync{font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:right}
+
+/* buttons and chips */
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:10px 14px;font-weight:600;min-height:44px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.ghost{background:transparent}
+.btn.small{min-height:34px;padding:5px 10px;font-size:14px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.block{width:100%}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:14px;min-height:36px;text-align:left;line-height:1.25}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--ink);font-weight:600}
+.chip .n{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-right:6px}
+.chip.right{background:var(--good-soft);border-color:var(--good);font-weight:600}
+.chip.wrong{background:var(--bad-soft);border-color:var(--bad);text-decoration:line-through}
+.chip.miss{border:2px dashed var(--good);background:transparent}
+.chip.static{cursor:default;min-height:0;padding:3px 10px;font-size:13px;background:var(--surface2)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+
+/* rank + plan */
+.rank{display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:end}
+.rank h2{font-size:28px;line-height:1.1}
+.bar{height:8px;background:var(--t0);border-radius:99px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.bar.gold>i{background:var(--t3)}
+.stat{text-align:right}
+.stat b{font-family:var(--font-display);font-size:26px;line-height:1}
+.plan input[type=date]{font:inherit;color:var(--ink);background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:6px 8px;min-height:36px}
+.cta{display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:left;padding:16px}
+.cta b{font-family:var(--font-display);font-size:20px}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.mode{text-align:left;display:flex;flex-direction:column;gap:2px;align-items:flex-start;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+.mode:hover{border-color:var(--accent)}
+.mode b{font-family:var(--font-display);font-size:17px}
+.mode span{font-size:13.5px;color:var(--muted);line-height:1.35}
+
+/* territory map */
+.unit-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:6px 0 8px;flex-wrap:wrap}
+.unit-head h3{font-size:17px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px}
+.tile{position:relative;border:0;border-radius:8px;padding:8px 8px 9px;min-height:62px;text-align:left;font-size:12.5px;line-height:1.2;font-weight:500;overflow-wrap:anywhere}
+.tile.t0{background:var(--t0);color:var(--t0-ink)} .tile.t1{background:var(--t1);color:var(--t1-ink)}
+.tile.t2{background:var(--t2);color:var(--t2-ink)} .tile.t3{background:var(--t3);color:var(--t3-ink);font-weight:600}
+.tile.due::after{content:"";position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--bad);box-shadow:0 0 0 2px var(--surface)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+/* study screens */
+.study-top{display:flex;align-items:center;gap:12px}
+.study-top .bar{flex:1}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.term{font-family:var(--font-display);font-size:clamp(28px,7vw,40px);line-height:1.08;font-weight:700;text-wrap:balance;overflow-wrap:anywhere}
+.sect{display:flex;flex-direction:column;gap:4px}
+.sect p{margin:0;max-width:68ch}
+.note{background:var(--warn-soft);border:1px solid var(--warn);border-radius:8px;padding:8px 12px;font-size:14px}
+textarea{font:inherit;color:var(--ink);background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%;min-height:96px;resize:vertical}
+textarea.short{min-height:72px}
+.yours{background:var(--surface2);border-radius:8px;padding:10px 12px;font-size:15px;white-space:pre-wrap;overflow-wrap:anywhere}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:10px;align-items:baseline;text-align:left;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);min-height:48px}
+.opt:hover{border-color:var(--accent)}
+.opt .k{font-family:var(--font-mono);font-size:12px;color:var(--muted)}
+.opt.right{background:var(--good-soft);border-color:var(--good)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.q{font-size:18px;line-height:1.5;max-width:62ch}
+.blank{letter-spacing:.1em;color:var(--muted)}
+.mark{display:flex;gap:8px}
+.mark .btn.sel-y{background:var(--good-soft);border-color:var(--good)}
+.mark .btn.sel-n{background:var(--bad-soft);border-color:var(--bad)}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--bg);border-top:1px solid var(--line);
+  padding:12px max(16px,env(safe-area-inset-left,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px))}
+.dock-in{max-width:760px;margin:0 auto;display:flex;gap:8px}
+.dock .btn{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;line-height:1.2}
+.dock .btn small{font-family:var(--font-mono);font-size:11px;font-weight:400;color:inherit;opacity:.75}
+.r0{border-color:var(--bad)!important} .r1{border-color:var(--warn)!important} .r2{border-color:var(--good)!important} .r3{border-color:var(--accent)!important}
+.combo{font-family:var(--font-display);font-weight:700;font-size:20px}
+.big{font-family:var(--font-display);font-size:48px;line-height:1;font-weight:700}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 12px;background:var(--surface2);border-radius:8px;min-width:0}
+.item span:first-child{overflow-wrap:anywhere}
+.sizes{display:flex;gap:8px;flex-wrap:wrap}
+.blank-sel{flex:1 1 0;min-width:0;font:inherit;font-weight:600;color:var(--ink);background:var(--surface2);border:0;border-bottom:2px solid var(--accent);border-radius:6px 6px 0 0;padding:8px 10px;min-height:44px}
+.blank-sel:focus-visible{outline-offset:0}
+
+/* modal + toast */
+.overlay{position:fixed;inset:0;z-index:40;background:rgba(8,12,22,.55);display:flex;align-items:flex-end;justify-content:center;
+  padding:0 max(0px,env(safe-area-inset-left,0px)) 0 max(0px,env(safe-area-inset-right,0px))}
+.sheet{width:100%;max-width:760px;max-height:88vh;overflow:auto;background:var(--bg);border-radius:16px 16px 0 0;padding:16px max(16px,env(safe-area-inset-left,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;font-size:14px;max-width:90vw;text-align:center}
+.backup textarea{font-family:var(--font-mono);font-size:12px;min-height:70px}
+details summary{cursor:pointer;font-weight:600}
+@media (prefers-reduced-motion:no-preference){
+  .bar>i{transition:width .35s ease}
+  .tile,.opt,.btn,.chip{transition:background .12s,border-color .12s}
+}
+</style>
+
+<div class="wrap" id="app"></div>
+<div id="dock"></div>
+<div id="modal"></div>
+<div id="toast"></div>
+<script>
+"use strict";
+/* ==========================================================================
+   PART 1 — DATA, STATE, SPACED REPETITION
+   Everything the app *knows* lives here. The screens (parts 2 and 3) only
+   read this state and call grade() / save() to change it.
+   ========================================================================== */
+
+/* ---- 1. The vocab data (generated from your PDFs by parse_terms.py) ------ */
+const DATA = {"processes":["State Formation & Expansion","State Consolidation","Political Fragmentation","Legitimization & Challenges to Authority","Cultural Diffusion","Cultural Syncretism & Reform","Expansion of Trade Networks","Economic Transformation","Social Organization & Change","Technological & Military Innovation","Migration & Population Change","Environmental Adaptation & Change"],"cards":[{"term":"Ocean Faring Technology","unit":4,"definition":"Improvements in ship design and sailing technology that made long-distance ocean travel safer, faster, and more profitable. The caravel was small and maneuverable, the carrack carried large amounts of cargo, the Dutch fluyt transported goods economically, and lateen sails helped ships sail at angles to the wind.","example":"Portugal used caravels to explore the African coastline. Spain used larger ocean-going ships for Atlantic voyages, while Dutch fluyts helped merchants compete in European and overseas trade.","spice":["Technology","Economic"],"process":["Technological & Military Innovation","Expansion of Trade Networks"],"why":"Better ships reduced the risks and costs of ocean travel, allowing Europeans to establish permanent maritime trade routes. These innovations helped shift some long-distance commerce toward Atlantic and oceanic networks, contributing to European overseas expansion."},{"term":"Christopher Columbus","unit":4,"definition":"Italian navigator who sailed for Spain in 1492 seeking a westward route to Asia. Instead, he reached islands in the Caribbean, beginning sustained contact between Europe and the Americas.","example":"Columbus's first voyage reached the Caribbean in 1492. Subsequent Spanish expeditions established colonies on Caribbean islands and expanded European exploration of the Americas.","spice":["Political","Economic","Environmental Interaction"],"process":["State Formation & Expansion","Migration & Population Change"],"why":"Columbus's voyages initiated sustained transatlantic connections that led to European colonization, the Columbian Exchange, and the expansion of forced labor systems. These developments transformed populations, economies, and environments on both sides of the Atlantic."},{"term":"Vasco da Gama","unit":4,"definition":"Portuguese explorer who reached India by sailing around Africa's Cape of Good Hope in 1498, establishing a direct sea route between Europe and the Indian Ocean trade network.","example":"Da Gama reached Calicut, India, in 1498, helping Portugal establish a maritime commercial presence in the Indian Ocean.","spice":["Economic","Political","Technology"],"process":["Expansion of Trade Networks","State Formation & Expansion"],"why":"Portugal could now obtain Asian luxury goods through direct ocean trade rather than relying entirely on established Mediterranean and overland intermediaries. Portuguese fleets subsequently used naval force and fortified ports to compete for control over profitable maritime trade."},{"term":"Portuguese Exploration","unit":4,"definition":"Portuguese efforts during the 1400s to explore the Atlantic and African coasts in search of trade routes, wealth, and opportunities for Christian expansion. Prince Henry the Navigator sponsored voyages and exploration, although he did not personally lead these expeditions.","example":"Portuguese sailors explored the western African coastline, established trading connections, and eventually rounded the Cape of Good Hope under Bartolomeu Dias in 1488.","spice":["Political","Economic","Technology"],"process":["Technological & Military Innovation","Expansion of Trade Networks"],"why":"Royal sponsorship combined navigational knowledge, shipbuilding improvements, and commercial ambitions. Portuguese exploration established the foundations for a trading-post empire and encouraged other European kingdoms to finance oceanic voyages."},{"term":"Ferdinand Magellan","unit":4,"definition":"Portuguese-born explorer who commanded a Spanish expedition beginning in 1519 to find a westward passage to Asia. Magellan died in the Philippines in 1521, but surviving members of his expedition completed the first recorded circumnavigation of the globe in 1522.","example":"Magellan's expedition crossed the Atlantic, sailed through the strait at South America's southern end, and crossed the Pacific before one surviving ship returned to Spain.","spice":["Technology","Economic","Political"],"process":["Technological & Military Innovation","Expansion of Trade Networks"],"why":"The expedition demonstrated that the world's oceans were connected by navigable routes while revealing the enormous distances and dangers involved. It improved European geographical knowledge and contributed to later transpacific commerce."},{"term":"Columbian Exchange","unit":4,"definition":"Widespread transfer of plants, animals, diseases, people, and ideas between the Eastern and Western Hemispheres after 1492.","example":"American crops such as potatoes and maize spread to Europe, Africa, and Asia. Europeans introduced horses, cattle, wheat, and diseases such as smallpox into the Americas.","spice":["Environmental Interaction","Social","Economic"],"process":["Environmental Adaptation & Change"],"why":"New crops increased food supplies and supported population growth in many regions. However, European diseases devastated Indigenous American populations, while introduced animals and plantation agriculture transformed American environments. The exchange permanently connected the world's ecosystems and economies.","flag":"Your chart lists \"Agricultural Diffusion\" here, which isn't one of the 12 Key Processes (it looks left over from an older version of the chart). The drills only use the 12, so this card is scored on Environmental Adaptation & Change. Check with your teacher whether a second process is expected."},{"term":"Great Dying","unit":4,"definition":"Catastrophic population decline among Indigenous Americans following European contact, primarily caused by epidemic diseases, combined with warfare, displacement, and colonial exploitation.","example":"Smallpox and other introduced diseases devastated communities in Mexico and the Andes during the Spanish conquest and subsequent colonial period.","spice":["Environmental Interaction","Social","Economic"],"process":["Migration & Population Change","Environmental Adaptation & Change"],"why":"Massive population losses weakened Indigenous societies, disrupted agricultural production, and contributed to Spanish conquest and colonial control. Labor shortages also encouraged colonizers to expand the forced migration and enslavement of Africans, reshaping Atlantic societies."},{"term":"Trading Post Empire","unit":4,"definition":"Maritime empire that controlled strategically located ports, forts, and commercial routes rather than conquering extensive inland territories.","example":"Portugal established fortified trading posts at Goa in India, Malacca in Southeast Asia, and Hormuz near the Persian Gulf to influence Indian Ocean commerce.","spice":["Political","Economic"],"process":["State Formation & Expansion","Expansion of Trade Networks"],"why":"European states used naval power and strategic ports to control commercial chokepoints without requiring the armies and administrators needed to conquer large inland territories. This allowed relatively small European kingdoms to become influential participants in established Asian trade networks."},{"term":"Mercantilism","unit":4,"definition":"Economic philosophy that viewed international trade as a competition for wealth and power. Governments sought favorable balances of trade, encouraged exports, restricted competing imports, and used colonies to supply raw materials and markets.","example":"Spain restricted much of its colonial trade to approved Spanish ports and merchants, attempting to keep American silver and commercial profits within its imperial system.","spice":["Economic","Political"],"process":["Economic Transformation","State Consolidation"],"why":"European governments used trade regulations, monopolies, and colonial possessions to increase state revenue and support military power. Mercantilist competition encouraged imperial expansion, commercial rivalries, smuggling, and conflicts between European states."},{"term":"Global Silver Trade","unit":4,"definition":"Worldwide exchange of silver, particularly silver bullion (precious metal in bulk form), connecting the Americas, Europe, and Asia. Manila galleons were Spanish trading ships that transported American silver across the Pacific in exchange for Asian goods.","example":"Silver mined at Potosí in present-day Bolivia and Zacatecas in Mexico entered global trade networks. Spanish merchants exchanged American silver for Chinese silk, porcelain, and other Asian products through Manila.","spice":["Economic","Political","Environmental Interaction"],"process":["Expansion of Trade Networks","Economic Transformation"],"why":"American silver helped connect previously separate commercial networks into an increasingly global economy. Chinese demand for silver encouraged transpacific commerce, while silver imports helped fuel inflation in parts of Europe and expanded colonial mining operations that depended heavily on coercive labor."},{"term":"Triangular Trade and Middle Passage","unit":4,"definition":"Triangular trade describes Atlantic commercial connections linking Europe, Africa, and the Americas through exchanges of manufactured goods, enslaved Africans, and plantation commodities. The Middle Passage was the forced Atlantic voyage of enslaved Africans to the Americas.","example":"European merchants transported goods to African markets, purchased enslaved captives, and shipped them across the Atlantic. American plantations produced sugar, tobacco, and other commodities for European markets.","spice":["Economic","Social","Environmental Interaction"],"process":["Expansion of Trade Networks","Migration & Population Change"],"why":"Atlantic trade generated enormous commercial profits while expanding plantation economies dependent on enslaved labor. The forced migration of millions of Africans transformed American populations, created new African diaspora communities, and contributed to severe exploitation and demographic disruption in affected African societies."},{"term":"Trading Companies","unit":4,"definition":"Joint-stock companies were businesses funded by multiple investors who shared ownership, risks, and potential profits. Royal chartered monopolies were companies granted exclusive commercial privileges by governments, sometimes including the authority to establish forts, negotiate treaties, or wage war.","example":"The Dutch East India Company, founded in 1602, raised investment capital through shares and received a Dutch government charter granting extensive trading and political privileges in Asia.","spice":["Economic","Political"],"process":["Economic Transformation","State Formation & Expansion"],"why":"Shared investment allowed merchants to finance expensive voyages while spreading financial risk. Royal charters allowed governments to pursue commercial expansion through private companies, helping corporations become powerful instruments of overseas imperialism."},{"term":"East India Companies","unit":4,"definition":"Powerful European trading companies established to participate in Asian commerce. The Dutch East India Company (VOC, 1602) and English East India Company (EIC, 1600) operated under government charters and combined commercial activities with increasing political and military influence.","example":"The Dutch East India Company established Batavia on Java and competed for control of the Indonesian spice trade. The English East India Company established trading settlements at Madras, Bombay, and Calcutta.","spice":["Economic","Political"],"process":["Expansion of Trade Networks","State Formation & Expansion"],"why":"These companies demonstrated how private investment and state support could expand imperial influence overseas. Their fortified settlements, trade monopolies, and military forces gradually challenged local political authorities and competing European merchants."},{"term":"Coercive Labor","unit":4,"definition":"Labor obtained or controlled through force, threats, legal obligations, debt, or severe restrictions on personal freedom rather than through freely negotiated employment.","example":"Spanish colonial authorities compelled Indigenous workers to provide labor through institutions such as the encomienda and colonial mita. Plantation owners in the Americas relied on enslaved African labor.","spice":["Social","Economic","Political"],"process":["Economic Transformation","Social Organization & Change"],"why":"Colonial governments and landowners used coercive labor to extract valuable resources and produce profitable exports at low labor costs. These arrangements increased imperial wealth while creating systems of exploitation, inequality, resistance, and long-lasting social divisions."},{"term":"Encomienda System","unit":4,"definition":"Spanish colonial institution in which the Crown granted colonists the right to demand tribute and labor from designated Indigenous communities, supposedly in exchange for protection and Christian instruction.","example":"Spanish encomenderos in the Caribbean and New Spain demanded agricultural labor, mining work, or tribute from Indigenous communities following Spanish conquest.","spice":["Economic","Social","Political"],"process":["Economic Transformation","Social Organization & Change"],"why":"Encomienda grants allowed Spanish colonists to extract wealth from conquered populations while reinforcing colonial social hierarchies. Widespread exploitation and Indigenous population decline contributed to reforms, restrictions, and the growth of other colonial labor arrangements."},{"term":"Mita System","unit":4,"definition":"Labor draft originally used by the Inca Empire for public projects and state service. Spanish colonial authorities adapted the system to require rotational labor, particularly in Andean silver mines.","example":"Spanish authorities required designated Indigenous Andean communities to supply workers for silver mining at Potosí.","spice":["Economic","Political","Social"],"process":["Economic Transformation","Social Organization & Change"],"why":"Spanish rulers adapted an existing Indigenous labor institution to serve colonial commercial interests. The colonial mita provided workers for valuable silver mines but imposed severe burdens on Indigenous communities, demonstrating how conquest could preserve older institutions while changing their purposes."},{"term":"Hacienda System","unit":4,"definition":"Large landed estate in Spanish America devoted to agriculture or livestock production. Haciendas employed different forms of labor, including wage labor, tenant labor, and debt-dependent labor.","example":"Spanish landowners established haciendas in New Spain that produced wheat, livestock, and other agricultural goods for colonial settlements and mining centers.","spice":["Economic","Social"],"process":["Economic Transformation","Social Organization & Change"],"why":"Haciendas concentrated land and economic power among colonial elites while supplying expanding settlements and commercial markets. Dependence on landowners could restrict workers' economic freedom and contributed to patterns of rural inequality that survived beyond the colonial period."},{"term":"Indentured Servitude","unit":4,"definition":"Labor arrangement in which individuals agreed or were legally bound to work for an employer for a specified period, often in exchange for transportation, food, housing, or repayment of debt.","example":"European indentured servants traveled to English colonies such as Virginia, agreeing to work for several years to repay the cost of their passage across the Atlantic.","spice":["Social","Economic"],"process":["Migration & Population Change","Economic Transformation"],"why":"Indentured servitude supplied labor to colonial farms and plantations while allowing some Europeans to migrate despite lacking money for transportation. Although contracts were generally temporary, servants frequently faced harsh conditions, limited rights, and punishment. This system differed from hereditary racial chattel slavery."},{"term":"Chattel Slavery","unit":4,"definition":"System of slavery in which enslaved people were legally treated as property that could be bought, sold, and inherited. In Atlantic plantation societies, chattel slavery increasingly became racialized and hereditary.","example":"European plantation owners in Barbados and Brazil forced enslaved Africans and their descendants to cultivate sugar for Atlantic markets.","spice":["Social","Economic","Political"],"process":["Migration & Population Change","Social Organization & Change"],"why":"Chattel slavery enabled plantation owners to build profitable export economies through forced labor. Laws increasingly tied enslaved status to African ancestry, producing hereditary racial hierarchies and inequalities that shaped societies throughout the Atlantic world."},{"term":"Maroon Communities","unit":4,"definition":"Communities established by formerly enslaved Africans who escaped slavery and created independent settlements, often in remote mountains, forests, or swamps.","example":"Escaped enslaved Africans established Palmares in colonial Brazil during the 1600s. Its inhabitants resisted repeated Portuguese military campaigns until the settlement's final destruction in 1694.","spice":["Social","Political","Cultural"],"process":["Legitimization & Challenges to Authority","Social Organization & Change"],"why":"Maroon communities challenged the authority of colonial governments and slaveholders by establishing independent settlements. Their resistance forced colonial powers to devote military resources to suppressing rebellion and demonstrated that enslaved people actively fought to obtain and preserve freedom."},{"term":"Pueblo Revolt","unit":4,"definition":"Successful Indigenous uprising in 1680 against Spanish colonial rule in present-day New Mexico, driven by forced labor, religious persecution, and colonial interference in Pueblo communities.","example":"Pueblo communities, coordinated in part by the leader Po'pay, attacked Spanish settlements and forced Spanish colonists to retreat from New Mexico in 1680. Spanish authorities reestablished colonial control beginning in 1692.","spice":["Political","Cultural","Social"],"process":["Legitimization & Challenges to Authority","State Formation & Expansion"],"why":"The Pueblo Revolt demonstrated that Indigenous peoples could organize resistance and temporarily overthrow European colonial control. The uprising challenged Spanish religious and political authority and contributed to changes in Spanish colonial policies after reconquest."},{"term":"Colonial Caste System","unit":4,"definition":"Social hierarchy in Spanish colonial America that classified people according to ancestry, birthplace, and perceived racial identity. Peninsulares were Spaniards born in Spain; creoles (criollos) were people of Spanish ancestry born in the Americas; mestizos were generally people of European and Indigenous ancestry; and mulattoes was a historical classification generally used for people of European and African ancestry.","example":"Peninsulares frequently received the highest colonial government appointments in New Spain, while wealthy creoles owned estates and businesses. Mestizos, people of African ancestry, and Indigenous communities experienced varying degrees of legal and social discrimination.","spice":["Social","Political","Economic"],"process":["Social Organization & Change","State Consolidation"],"why":"Colonial authorities and elites used social classifications to reinforce differences in status, wealth, and political privilege. These distinctions shaped access to offices, property, employment, and legal rights, although actual colonial society was more complex and flexible than a rigid caste pyramid suggests."},{"term":"Casta Paintings","unit":4,"definition":"Paintings produced mainly in eighteenth-century Spanish America that depicted families and individuals according to colonial categories of ancestry and social status. They often included clothing, occupations, and household possessions to suggest differences in social position.","example":"Artists in New Spain created series of casta paintings portraying couples of different ancestries and their children, frequently labeling them with terms such as español, mestizo, and mulato.","spice":["Social","Cultural","Political"],"process":["Social Organization & Change","Cultural Syncretism & Reform"],"why":"Casta paintings reveal how some colonial elites attempted to classify and organize increasingly diverse populations. They provide historians with visual evidence of colonial attitudes toward ancestry, identity, and social hierarchy, although the paintings reflected elite ideas rather than a complete picture of everyday life."},{"term":"Colonial Syncretism","unit":4,"definition":"Religious syncretism is the blending or adaptation of beliefs and practices from different religious traditions. Santería developed through interactions between Yoruba religious traditions and Catholicism, while Haitian Vodou developed through the adaptation of West and Central African religious traditions in a Catholic colonial environment.","example":"Enslaved Africans in Caribbean plantation societies preserved elements of African religious traditions while adapting their practices under European colonial rule. These cultural interactions contributed to the development of Santería in Cuba and Vodou in Saint-Domingue, later Haiti.","spice":["Cultural","Social"],"process":["Cultural Diffusion","Cultural Syncretism & Reform"],"why":"Enslaved Africans and their descendants preserved and transformed elements of their cultural identities despite forced migration and colonial persecution. Religious syncretism demonstrates how contact between societies can produce new traditions while maintaining connections to older beliefs and practices."},{"term":"Qing Dynasty","unit":3,"definition":"China's last imperial dynasty (1644–1912), established by the Manchus after the Ming Dynasty. Expanded Chinese territory into Taiwan, Tibet, Mongolia, and Central Asia.","example":"Yuan Dynasty - Mongol rulers governed China by adopting Chinese traditions while maintaining their own identity.","spice":["Political","Cultural"],"process":["State Formation & Expansion","State Consolidation"],"why":"The Manchus conquered Ming China, retained its bureaucracy, and expanded Qing territory through military campaigns. Demonstrated how foreign conquerors could maintain power by combining traditional institutions with military strength. Expanded China's territorial influence."},{"term":"Mughal Empire","unit":3,"definition":"Muslim empire (1526–1857) that controlled much of India. Known for combining Persian, Islamic, and Indian cultures while struggling to govern a large, religiously diverse population.","example":"Delhi Sultanate - Muslim rulers governed a predominantly Hindu population in northern India.","spice":["Political","Cultural"],"process":["State Formation & Expansion","Cultural Syncretism & Reform"],"why":"Mughal emperors conquered much of India and used taxes, officials, and alliances with local elites to govern diverse peoples. Created a wealthy, culturally diverse empire but demonstrated the difficulty of maintaining unity across religious and regional differences."},{"term":"Ottoman Empire","unit":3,"definition":"Powerful Islamic empire (c. 1299–1922) founded by Turkic peoples. Captured Constantinople in 1453 and controlled territories across southeastern Europe, North Africa, and the Middle East.","example":"Ottoman Military - Made extensive use of cannons and gunpowder weapons to seize major trade hubs like Constantinople (now Istanbul) to expand the empire.","spice":["Political","Cultural","Technology"],"process":["State Formation & Expansion","State Consolidation"],"why":"Ottoman rulers used gunpowder armies to conquer territory and bureaucratic and religious institutions to maintain control. Controlled strategic trade routes connecting Europe and Asia and demonstrated the power of military technology and centralized administration."},{"term":"Safavid Empire","unit":3,"definition":"Persian empire (1501–1736) that established Shi'a Islam as its official religion. Developed a distinct Persian identity and frequently competed with the Sunni Ottoman Empire.","example":"Succession to the Ilkhanate empire, outsting the Mongol rulers and reestablishing Shi’a Islam as the dominant religion. Combines Persian Zoroastrian traditions of a god king’s bloodline with following the blood relatives of Prophet Muhammad.","spice":["Political","Cultural"],"process":["State Consolidation","Legitimization & Challenges to Authority"],"why":"Safavid rulers promoted Shi’a Islam to unify Persia and distinguish their empire from Sunni rivals. Established Persia as a major Shi'a Muslim center, contributing to lasting religious and political divisions in the Islamic world such as the Saudi Arabia/Iran rivalry."},{"term":"Songhai Empire","unit":3,"definition":"Major West African Islamic empire that flourished during the 15th and 16th centuries after replacing Mali. Controlled important Trans-Saharan trade routes before falling to Moroccan invaders in 1591.","example":"Successor to the Malian Empire. Mali grew based on control of gold and salt trade essential to Silk Road commerce and food preservation. Mali fell because it failed to keep up infrastructure and lack of merit in its bureaucracy leading to corruption. Songhai repeats the cycle.","spice":["Political","Economic"],"process":["State Formation & Expansion","Expansion of Trade Networks"],"why":"Songhai conquered Niger River trading cities and taxed merchants along Trans-Saharan routes. Demonstrated how control of trade supported powerful African empires, but also how military technology could shift regional power.","flag":"Your chart had Safavid text in this card's Process line (a copy-paste slip). I filled in the two processes that fit its Why it Matters; check them against your teacher's version."},{"term":"Devshirme","unit":3,"definition":"Ottoman recruitment system that took Christian boys, primarily from the Balkans, converted them to Islam, and trained them as soldiers or government administrators.","example":"Similar to Chinese Civil Service Examination but designed to enforce stricter loyalty to the state. Those selected often were castrated to ensure they could have no family and thus the state was their family.","spice":["Political","Social"],"process":["State Consolidation","Social Organization & Change"],"why":"Ottoman officials recruited and trained Christian boys for military and government service tied to the sultan. Helped the Ottoman sultan create a powerful government and military with officials whose careers depended on his authority. Became a major problem later in the empire as they became reliant on devshirme from restive populations to maintain their government."},{"term":"Janissaries","unit":3,"definition":"Elite Ottoman infantry soldiers, many recruited through the devshirme system. Trained to serve the sultan and equipped with gunpowder firearms.","example":"Soldiers recruited through devshirme. Designed to be meritocratic but with intense loyalty to the state. Eventually janissaries realized they controlled the real power and used it to overthrow Sultans leading to chaos and decline.","spice":["Political","Technology"],"process":["State Consolidation","Technological & Military Innovation"],"why":"Professional infantry equipped with firearms strengthened Ottoman conquest and the sultan’s authority. Helped establish the Ottoman Empire as a major gunpowder power and strengthened the sultan's military authority."},{"term":"Divine Right","unit":3,"definition":"Belief that a monarch receives authority to rule directly from God and is ultimately accountable to God rather than ordinary subjects.","example":"Similar to China’s Mandate of Heaven where rulers received authority from Heaven but could lose it through poor governance. Europeans envisioned the Catholic Church as the one to bestow God’s approval to kings and queens.","spice":["Political","Cultural"],"process":["Legitimization & Challenges to Authority","State Consolidation"],"why":"European monarchs claimed their authority came from God to justify royal rule and discourage challenges. Strengthened royal authority and helped justify absolute monarchy, although religious and political reformers increasingly challenged such claims."},{"term":"Absolute Monarchy","unit":3,"definition":"System of government in which a hereditary monarch holds nearly unlimited political authority, with few effective restrictions from representative institutions.","example":"As states centralized, they abolished feudal institutions to increase the power of the central state held by the king/queen. The Louis line in France emphasized their absolute rule while England pursued a parliamentary system balancing power of legislative and executive.","spice":["Political"],"process":["State Consolidation","Legitimization & Challenges to Authority"],"why":"Monarchs reduced noble independence while expanding royal bureaucracies, taxation, and standing armies. Strengthened centralized states such as France under Louis XIV but created conflicts over taxation, representation, and royal power."},{"term":"Taj Mahal","unit":3,"definition":"Elaborate marble mausoleum built in Agra, India, by Mughal emperor Shah Jahan in memory of his wife Mumtaz Mahal. Completed mainly during the 1640s and 1650s.","example":"France’s Palace of Versailles built as an estate for the Louis family. Hundreds of room, expansive gardens designed to show off their magnificence and power (and the debt used to build it).","spice":["Cultural","Political"],"process":["Legitimization & Challenges to Authority","Cultural Syncretism & Reform"],"why":"Shah Jahan displayed Mughal wealth and authority through a monument blending Persian, Islamic, and Indian styles. Demonstrated Mughal wealth, imperial power, and cultural blending, while showing how rulers used architecture to display prestige."},{"term":"Tax Farming","unit":3,"definition":"System in which governments gave private individuals the right to collect taxes in exchange for payments to the state. Used in the Ottoman Empire and other states.","example":"Mughal Zamindars targeting non-Muslims. Jizyra from the Ottomans.","spice":["Economic","Political"],"process":["State Consolidation","Economic Transformation"],"why":"Empires delegated tax collection to private agents to fund armies and administration, sometimes weakening oversight. Helped empires finance armies and administration but could encourage corruption, exploitation, and weaker central control."},{"term":"Protestant Reformation","unit":3,"definition":"Religious movement beginning in 1517 when Martin Luther challenged Catholic Church practices. Led to the formation of Protestant Christian denominations such as Lutheranism, Calvinism, and Anglicanism.","example":"Continues Europe’s challenge to authority weakening the religious monopoly of the Catholic Church allowing new competing power blocks like England to begin taking centerstage.","spice":["Cultural","Political"],"process":["Legitimization & Challenges to Authority","Cultural Syncretism & Reform"],"why":"Reformers challenged Catholic authority, while printing and supportive rulers spread Protestant ideas. Divided Western Christianity, weakened the Catholic Church's religious monopoly, and contributed to major political conflicts in Europe."},{"term":"Ninety-Five Theses","unit":3,"definition":"Arguments written by Martin Luther in 1517 criticizing the Catholic Church's sale of indulgences and calling for religious debate and reform.","example":"Block printing from Asia inspires the printing press in Europe allowing for fast printing of books and pamphlets spreading ideas faster than those in power could stop them.","spice":["Cultural","Technology"],"process":["Legitimization & Challenges to Authority","Technological & Military Innovation"],"why":"Luther’s criticisms of indulgences spread rapidly through printing and encouraged wider religious debate. Helped begin the Protestant Reformation and demonstrated how communication technology could spread ideas that challenged powerful institutions."},{"term":"Catholic Reformation (Counter-Reformation)","unit":3,"definition":"Catholic Church's response to Protestantism during the 16th and 17th centuries. Reaffirmed Church teachings, addressed corruption, expanded missionary work, and strengthened religious discipline.","example":"Reforms corruption by ending selling of offices, new standards for education for priests (actually have to be able to read), and ends selling of indulgences.","spice":["Cultural","Political"],"process":["Cultural Syncretism & Reform","Legitimization & Challenges to Authority"],"why":"Catholic leaders reaffirmed doctrine, corrected abuses, and expanded education and missions to strengthen the Church. Revitalized Catholicism, slowed Protestant expansion in some regions, and expanded Catholic influence through global missionary activity."},{"term":"Jesuits","unit":3,"definition":"Catholic religious order called the Society of Jesus, founded in 1540. Focused on education, missionary work, and strengthening Catholic influence during the Counter-Reformation.","example":"Expand influence of Catholic leaders such as Spain sending Jesuits into the Americas to convert native peoples to build greater loyalty to the Spanish state.","spice":["Cultural"],"process":["Cultural Diffusion","Cultural Syncretism & Reform"],"why":"Jesuit teachers and missionaries spread Catholicism through schools and missions while engaging with local traditions. Spread Catholic Christianity worldwide and contributed to cultural exchanges between Europe, Asia, and the Americas."},{"term":"Indulgence","unit":3,"definition":"In Catholic teaching, a remission of temporal punishment for sins whose guilt has already been forgiven. Abuses involving payments for indulgences became a major target of Protestant criticism.","example":"Major scandal where the funding for a cathedral’s renovation was paid for by indulgences. Priests gave the impression you could buy your way into Heaven.","spice":["Cultural","Economic"],"process":["Legitimization & Challenges to Authority","Economic Transformation"],"why":"Controversies over payments connected to indulgences fueled criticism of Church practices and demands for reform. Controversies over indulgences helped trigger the Protestant Reformation and weakened confidence in Church leadership."},{"term":"Simony","unit":3,"definition":"Practice of buying or selling Church offices or spiritual privileges, widely condemned as corruption within Christianity.","example":"Part of corruption of a bureaucracy. Similar practices done in other failing states and organizations such as at the end of Chinese dynasties.","spice":["Cultural","Political"],"process":["Legitimization & Challenges to Authority","State Consolidation"],"why":"The sale of Church offices weakened trust in religious leadership and strengthened calls to reform corruption. Undermined trust in Church leadership and contributed to demands for reform, including efforts to enforce existing prohibitions against simony."},{"term":"Inquisition","unit":3,"definition":"Catholic Church tribunals established to investigate suspected heresy and enforce religious orthodoxy. Some inquisitions predated the Protestant Reformation, while others became important during Catholic reform.","example":"Used to purge dissent. In the Americas, the Church sought to end practice of native religions and eliminate syncretic forms of Christianity to maintain purity and power.","spice":["Cultural","Political"],"process":["Legitimization & Challenges to Authority","State Consolidation"],"why":"Church tribunals investigated suspected heresy, sometimes with state support, to enforce religious conformity. Demonstrated how religious institutions and governments used authority to enforce conformity, contributing to religious persecution and intolerance."},{"term":"Thirty Years' War","unit":3,"definition":"Devastating European conflict (1618–1648) beginning with tensions between Catholics and Protestants in the Holy Roman Empire. Expanded into a broader struggle for political power.","example":"Final conclusion of the crusading ideas as Europe destroys itself. Constant warfare against an external threat often turns inward as there is an attempt to crush dissent. Germany’s destruction leads to France’s ascendence.","spice":["Political","Cultural"],"process":["Political Fragmentation","Legitimization & Challenges to Authority"],"why":"Catholic-Protestant tensions and dynastic rivalries drew European states into war and weakened the Holy Roman Empire. Weakened the Holy Roman Empire, devastated parts of Central Europe, and produced the Peace of Westphalia in 1648, changing European political relationships."},{"term":"John Calvin","unit":3,"definition":"French Protestant theologian (1509–1564) who developed Calvinism, a branch of Christianity emphasizing God's sovereignty and predestination.","example":"Similar to Martin Luther breaking away from the Catholic Church and reinterpreting Christian church doctrine. Similar to Buddhism changing as it appeals to different cultures. Clavin’s predestination appealed to elites and wealthy while Lutheranism appealed to regular people. (God saves based on his plan versus salvation through faith.)","spice":["Cultural","Political"],"process":["Cultural Syncretism & Reform","Cultural Diffusion"],"why":"Calvin developed Protestant teachings in Geneva that spread through followers and challenged Catholic religious unity. Influenced Protestant movements throughout Europe and helped establish religious communities that challenged Catholic authority."},{"term":"Sikhism","unit":3,"definition":"Monotheistic religion founded by Guru Nanak in the Punjab region of South Asia during the late 15th century. Developed in a region influenced by Hindu and Islamic traditions while establishing distinct beliefs and practices.","example":"Similar to the creation of Bahkti movement, showing influence of an invading power bringing its religion creating traditions. Used by Mughals to help establish power of fellow Muslims. But get discriminated against when empire is trapped in a purity spiral.","spice":["Cultural","Social"],"process":["Cultural Syncretism & Reform","Cultural Diffusion"],"why":"Guru Nanak’s teachings arose amid Hindu-Islamic interaction and developed into a distinct Sikh religious community. Demonstrated religious innovation and cultural interaction in South Asia and became an important religious identity within the Mughal Empire."},{"term":"Shogunate","unit":3,"definition":"Japanese military government led by a shogun, who exercised effective political authority while the emperor remained the symbolic ruler.","example":"Similar to Russian Empire which was more feudal based. Japanese transition away from the Shogunate to the empire helped advance their power. Russia was last to transition away leaving them weaker versus other empires.","spice":["Political","Social"],"process":["State Consolidation","Legitimization & Challenges to Authority"],"why":"Military rulers governed through regional lords, while Tokugawa shoguns tightened control over those lords. Maintained warrior-based government in Japan. The Tokugawa Shogunate eventually strengthened centralized control and promoted centuries of relative internal stability."},{"term":"Daimyo","unit":3,"definition":"Powerful Japanese landholding lords who controlled regional territories and commanded armies of samurai. Their authority was increasingly regulated under the Tokugawa Shogunate.","example":"Similar to European feudal lords who controlled lands in return for military service and owned manors or estates. Reducing the power of the daimyo became key to Japanese state centralization.","spice":["Political","Social"],"process":["Political Fragmentation","State Consolidation"],"why":"Regional lords controlled land and samurai, but Tokugawa alternate attendance limited their independence. Demonstrated the importance of regional military power in Japan and how centralized governments could gradually control local elites."},{"term":"Jizya","unit":3,"definition":"Tax historically imposed on certain non-Muslim subjects, especially Jews and Christians, under Islamic governments. Its application varied by ruler and empire.","example":"Similar to Zamindar though more directly targeted at non-Muslims as coercive tax instrument to force people to convert. Conversions built loyalty to state controlled mosques while taxes provided extra income, initially.","spice":["Economic","Cultural","Political"],"process":["State Consolidation","Social Organization & Change"],"why":"Muslim rulers collected a tax from certain non-Muslim subjects while regulating the rights of religious communities. Helped Muslim rulers generate revenue and govern religious diversity, but also reinforced legal distinctions between religious communities."},{"term":"Millet System","unit":3,"definition":"Ottoman arrangement in which recognized religious communities administered certain internal matters, such as marriage, education, and religious affairs, under their own religious leadership.","example":"Similar to Mongol religious tolerance to maintain stability. Not a liberal multicultural policy but designed to reduce need for internal security. Breaks down during times of crises as dominant religion attakcs minorities.","spice":["Political","Cultural","Social"],"process":["State Consolidation","Social Organization & Change"],"why":"Ottoman officials allowed recognized religious communities to manage some internal affairs under imperial authority. Allowed the Ottoman Empire to manage religious diversity and maintain stability without requiring all subjects to follow the same religion."},{"term":"Silk Road","unit":2,"definition":"Network of land trade routes connecting China and Central Asia with the Middle East, Europe, and Africa.","example":"Merchants traded valuable luxury goods such as Chinese silk while technologies including paper, gunpowder, and the compass spread between societies.","spice":["Economic","Cultural","Technology"],"process":["Expansion of Trade Networks","Cultural Diffusion"],"why":"The Silk Roads connected distant societies and increased the movement of goods, technologies, ideas, religions, and diseases across Afro-Eurasia. Because land transportation was expensive, trade focused heavily on valuable luxury goods."},{"term":"Luxury Trade Goods","unit":2,"definition":"Expensive goods traded over long distances because wealthy consumers were willing to pay high prices for them.","example":"Silk from China, spices from South and Southeast Asia, and gold from West Africa traveled through major trade networks.","spice":["Economic","Cultural"],"process":["Expansion of Trade Networks","Economic Transformation"],"why":"High-value goods made long-distance trade profitable and encouraged states to protect, control, and tax trade routes."},{"term":"Caravanserais","unit":2,"definition":"Inns and trading posts along major land trade routes where merchants and their animals could rest and exchange goods.","example":"States supported caravanserais along the Silk Roads to make long-distance trade safer and easier.","spice":["Economic","Cultural"],"process":["Expansion of Trade Networks","Cultural Diffusion"],"why":"Caravanserais encouraged merchants from different societies to meet and exchange goods, languages, religions, and ideas. This increased both trade and cultural syncretism along the Silk Roads."},{"term":"Mongol Empire","unit":2,"definition":"Vast empire created by Chinggis Khan and his successors through the conquest of much of Eurasia. Helped revive the Silk Road and European interest in trade. Militarized political structure where all parts of society organized into military units and supports. Early model of modern fascism.","example":"The empire eventually divided into major khanates, including the Yuan Dynasty in China and Ilkhanate in Persia. Mongol protection of trade routes encouraged merchants and travelers to move across Eurasia.","spice":["Political","Economic","Social","Cultural"],"process":["State Formation & Expansion","Political Fragmentation"],"why":"Mongol conquest temporarily connected much of Eurasia under related rulers, creating the conditions for the Pax Mongolica. Mongols frequently adopted the cultures and religions of the societies they conquered, while their empire accelerated trade, migration, and cultural diffusion."},{"term":"Mongol Rule","unit":2,"definition":"Mongol methods of governing conquered peoples while often adopting local customs and institutions.","example":"Mongol rulers protected trade routes, rebuilt infrastructure after conquest, supported scholars, and brought people with specialized knowledge from different parts of Eurasia together. Mongol rulers adopted many Chinese governing practices while maintaining Mongol political privileges. Yuan rule also connected China more closely with the wider Eurasian trade network. Yuan rulers restored roads and canals, supported long-distance trade, used paper currency, and permitted Buddhism, Daoism, Islam, Christianity, and other religions.","spice":["Political","Cultural","Economic","Technology"],"process":["State Consolidation","Cultural Diffusion"],"why":"Mongols conquered through military force but usually governed by adapting to local societies. Their empire increased contact among Chinese, Persian, Islamic, and European peoples and helped knowledge move across Eurasia. Mongol rule connected distant regions more closely than before. Trade and technology spread rapidly, but so did warfare, forced migration, and disease."},{"term":"Pax Mongolica","unit":2,"definition":"Period of increased stability and security across much of Eurasia under Mongol rule.","example":"Mongol protection of Silk Road routes allowed merchants, diplomats, missionaries, and travelers such as Marco Polo to travel more easily between Europe and Asia.","spice":["Political","Economic","Cultural"],"process":["Expansion of Trade Networks","Cultural Diffusion"],"why":"Greater security increased trade, diplomacy, and cultural exchange across Eurasia. Europeans gained greater knowledge of Asian wealth and geography, helping increase later European interest in reaching Asia. Christian kingdoms explored alliances with non-Muslim kingdoms like the Mongols to counter Islamic power. Imperial protection reduced some obstacles to travel across multiple regions."},{"term":"Fall of the Mongols","unit":2,"definition":"Decline and fragmentation of Mongol-controlled states during the 1300s.","example":"In Persia, economic problems and failed attempts to use paper currency weakened the Ilkhanate. In China, plague, inflation, natural disasters, and rebellion contributed to the collapse of the Yuan Dynasty.","spice":["Political","Economic","Social"],"process":["Political Fragmentation","Economic Transformation"],"why":"Mongol states became difficult and expensive to govern. Economic problems, disease, rebellion, and competition among Mongol rulers caused the empire to break into separate states."},{"term":"Indian Ocean Trade","unit":2,"definition":"Maritime trade network connecting East Africa, the Middle East, South Asia, Southeast Asia, and China.","example":"China exported silk and porcelain; East Africa exported gold, ivory, and iron; India traded spices, pepper, cotton textiles, and gems. Merchant communities settled throughout the network.","spice":["Economic","Cultural","Environmental Interaction","Technology"],"process":["Expansion of Trade Networks","Cultural Diffusion"],"why":"Indian Ocean trade moved enormous amounts of goods because ships could carry more cargo than land caravans. It also encouraged diasporic communities and spread religions and cultures across coastal regions."},{"term":"Maritime Technology","unit":2,"definition":"Technologies that allowed sailors to navigate farther, transport more goods, and travel more reliably across oceans.","example":"The magnetic compass helped determine direction, the astrolabe helped sailors estimate latitude, improved sails allowed ships to use changing winds, and larger vessels carried more cargo.","spice":["Technology","Economic"],"process":["Technological & Military Innovation","Expansion of Trade Networks"],"why":"Better maritime technology increased the distance and reliability of sea travel, helping Indian Ocean trade expand."},{"term":"Zheng He","unit":2,"definition":"Chinese Muslim admiral who led enormous Ming treasure fleets across the Indian Ocean during the early 1400s. Showed power of Ming China but also fear of change through exploration.","example":"Zheng He's fleets sailed from China through Southeast Asia and India to Arabia and East Africa, displaying Chinese wealth and power.","spice":["Political","Economic","Technology","Cultural"],"process":["Expansion of Trade Networks","Legitimization & Challenges to Authority"],"why":"His voyages demonstrated China's advanced naval technology and the enormous reach of Indian Ocean trade. Later Ming rulers ended the voyages as government priorities shifted inward."},{"term":"Diasporic Communities","unit":2,"definition":"Communities of people living far from their homeland who maintain parts of their original culture, language, or religion.","example":"Indian Ocean trade created merchant communities such as Chinese communities in Southeast Asia and Arab communities along the East African coast.","spice":["Social","Cultural","Economic"],"process":["Migration & Population Change","Cultural Diffusion"],"why":"Merchant diasporas helped trade by creating trusted communities in foreign ports. Their interaction with local peoples also blended languages, religions, foods, and customs."},{"term":"Trans-Saharan Trade","unit":2,"definition":"Trade network connecting North Africa and West Africa across the Sahara Desert.","example":"West African merchants traded gold, ivory, and enslaved people northward while receiving goods such as salt, textiles, and horses.","spice":["Economic","Cultural","Environmental Interaction"],"process":["Expansion of Trade Networks","Cultural Diffusion"],"why":"Trans-Saharan trade enriched states such as Mali and helped Islam spread into West Africa."},{"term":"Pack Animals","unit":2,"definition":"Domesticated animals used to transport people and goods across difficult terrain.","example":"Camels crossed deserts carrying heavy loads, horses provided speed and military power, oxen transported goods, and llamas carried loads through the Andes.","spice":["Economic","Technology","Environmental Interaction"],"process":["Environmental Adaptation & Change","Expansion of Trade Networks"],"why":"Pack animals lowered the difficulty and cost of moving goods, allowing trade networks to cross deserts, mountains, and grasslands."},{"term":"Camel Saddles","unit":2,"definition":"Specialized saddles developed to make camels more effective for transportation and warfare.","example":"Different saddle designs placed riders behind, above, or near the camel's hump depending upon whether control, comfort, carrying capacity, or battlefield visibility was most important.","spice":["Technology","Economic","Environmental Interaction"],"process":["Technological & Military Innovation","Environmental Adaptation & Change"],"why":"Camel saddles made desert transportation easier and helped merchants carry larger quantities of goods across the Sahara and Arabian deserts."},{"term":"Ibn Battuta","unit":2,"definition":"Muslim scholar and traveler from Morocco who journeyed throughout Africa and Asia during the 1300s. Showed unity of Muslim culture across Dar al-Islam but also how it adapted to local culture.","example":"Ibn Battuta traveled from Morocco through the Middle East, India, Southeast Asia, and Mali, recording the customs and governments he encountered.","spice":["Social","Cultural","Economic"],"process":["Cultural Diffusion","Expansion of Trade Networks"],"why":"His travels demonstrate how Islamic beliefs and trade networks connected societies across Afro-Eurasia despite major cultural differences."},{"term":"Travelers: Marco Polo","unit":2,"definition":"Venetian merchant and traveler whose writings described his travels through Mongol-controlled Asia. Revived European interest in Silk Road.","example":"Marco Polo's account of China introduced many Europeans to the wealth and products of Asia. Later explorers, including Columbus, read stories associated with his travels.","spice":["Cultural","Economic"],"process":["Cultural Diffusion","Expansion of Trade Networks"],"why":"European interest in Asian luxury goods helped encourage later attempts to find direct trade routes to Asia."},{"term":"Cultural Diffusion","unit":2,"definition":"Spread of beliefs, ideas, languages, technologies, and cultural practices from one society to another.","example":"Buddhism spread from India to China along the Silk Roads, where Buddhist ideas blended with Daoism to create Chan (Zen) Buddhism. Islam spread through trade, missionaries, and conquest, contributing to blended cultures such as Swahili in East Africa and Urdu in South Asia.","spice":["Cultural","Social"],"process":["Cultural Diffusion","Cultural Syncretism & Reform"],"why":"Trade networks moved ideas as well as goods. As religions and cultures entered new societies, people adapted and blended them with local traditions, creating new religions, languages, art, and political ideas. These cultural exchanges could serve as bridges between societies, but also create tension within societies experiencing rapid change."},{"term":"Black Death","unit":2,"definition":"Deadly infectious disease that spread across Eurasian trade routes during the 1300s.","example":"The plague spread from China across interconnected trade routes and killed roughly one-third of Europe's population, along with large numbers of people in major cities elsewhere.","spice":["Social","Economic","Environmental Interaction"],"process":["Migration & Population Change","Social Organization & Change"],"why":"Trade networks moved diseases as well as goods and ideas. Massive population loss created labor shortages, allowing surviving workers to demand higher wages while contributing to the decline of many heavily populated cities."},{"term":"Crop Diffusion","unit":2,"definition":"Environmental and population changes caused by the spread of crops and expansion of farming.","example":"Migration and the introduction of new crops increased food production in many regions, encouraging population growth and settlement.","spice":["Environmental Interaction","Social","Economic"],"process":["Environmental Adaptation & Change","Migration & Population Change"],"why":"More food improved nutrition and supported larger populations, but expanding agriculture could also cause deforestation, soil erosion, and environmental degradation. Environmental damage could weaken societies, as seen with the Maya."},{"term":"Commercialization","unit":2,"definition":"Growth of markets and trade in which more goods are produced and exchanged for money and profit.","example":"Expanding trade encouraged the use of paper money, credit, and financial tools such as Chinese “flying cash,” which allowed merchants to transfer value without carrying large amounts of heavy metal coins.","spice":["Economic"],"process":["Economic Transformation","Expansion of Trade Networks"],"why":"Growing trade created larger markets, increased opportunities for merchants and producers, and encouraged development of money, credit, and banking systems. These tools made long-distance trade easier but could also create problems such as debt, inflation, and financial instability."},{"term":"Bureaucracy","unit":1,"definition":"System of government which appointed officials carry out laws, collect taxes, maintain records, and run the state.","example":"Song China use to manage empire and selected with civil service exam.","spice":["Political"],"process":["State Consolidation","Social Organization & Change"],"why":"Bureaucracies let rulers administer large territories, collect taxes, and enforce laws more consistently. However, corruption, excessive rules, or appointments based on favoritism could undermine their effectiveness."},{"term":"Meritocracy","unit":1,"definition":"System in which people gain positions based on abilities and achievements rather than by birth like feudalism.","example":"China's civil service exams tested knowledge and skills for government officials. Overtime became corrupted by only testing for people repeating government positions.","spice":["Social","Political"],"process":["State Consolidation","Social Organization & Change"],"why":"Examinations could help rulers recruit skilled officials and reduce dependence on hereditary elites. Yet unequal access to schooling meant wealthy families still enjoyed major advantages."},{"term":"Infrastructure","unit":1,"definition":"Everything needed to run daily life such as roads, bridges, canals, pipes, electricity, communication networks.","example":"Grand Canal transported rice and other goods via waterways from southern farming cities to northern manufacturing cities.","spice":["Political","Economic"],"process":["State Consolidation","Expansion of Trade Networks"],"why":"Infrastructure allows for more trade, increasing supplies for growing cities, and connecting regions together for control. Failure to maintain infrastructure or poorly designed infrastructure is a leading cause for a country declining."},{"term":"Gunpowder","unit":1,"definition":"Explosive mixture developed in China for fireworks and weapons.","example":"China used gunpowder in early bombs and rockets to attack forts.","spice":["Political","Technology"],"process":["Technological & Military Innovation","State Formation & Expansion"],"why":"Gunpowder spread beyond China and gradually transformed siege warfare and battlefields, especially as armies adopted cannons and firearms. Its military effects depended on training, organization, and access to resources."},{"term":"Agricultural Exchange","unit":1,"definition":"Trade of different kinds of foods increasing crop diversity and production.","example":"Champs Rice from Vietnam allowed Chinese farmers to grow two rice crops per year instead of one.","spice":["Social","Environmental Interaction","Economic"],"process":["Environmental Adaptation & Change","Migration & Population Change"],"why":"Food is the basis of society. More food means you need fewer farmers and more can specialize in manufacturing or technology. Surplus food leads to more trade for something else."},{"term":"Buddhism","unit":1,"definition":"Religion and philosophy emphasizing overcoming suffering to escape the cycle of rebirth. Founded in northern India. Basis for many religions in south and east Asia.","example":"Mahayana Buddhism says anyone (rich/poor) can become enlightened and must help others. Appeals to poor. Theravada Buddhism says one must escape from sins like greed/hate/delusion over many lifetimes to find enlightenment. Appeals to wealthy who are seen as close to enlightenment.","spice":["Cultural"],"process":["Cultural Diffusion","Cultural Syncretism & Reform"],"why":"Religions change as they spread. Different forms of Buddhism arise to appeal to the people. Poor Chinese peasants leaned towards Mahayana to escape strict control of Chinese Confucianism."},{"term":"Neo-Confucianism","unit":1,"definition":"Revived form of Confucian emphasizing social order and proper relationships while adopting some Buddhist ideas such as sins.","example":"Chinese state prompted Confucianism because it says you must obey the government (who must serve you in return)","spice":["Social","Political","Cultural"],"process":["State Consolidation","Legitimization & Challenges to Authority"],"why":"States use ideology and philosophy to reinforce their control. They promote those who believe its ideas, make those ideas into laws, and use the ideas to influence people's daily lives."},{"term":"Feudalism","unit":1,"definition":"Decentralized political system in which local landholding warriors have authority and provide military service in exchange for land or protection.","example":"In Japan, the emperor was a symbolic king with political power who granted land to shogun (military general) and daimyo (lords) and samurai (knights) to support him.","spice":["Social","Political"],"process":["Political Fragmentation","Social Organization & Change"],"why":"Where central governments lacked the ability to enforce authority, local lords often controlled land and military power. These decentralized relationships provided protection and obligations but could produce rivalry and limit central control."},{"term":"Islam","unit":1,"definition":"Monotheistic religion founded by prophet Muhammad. Holy book: Qur'an. Core belief: follow teachings of Muhammad, pray 5 times per day, pilgrimage to Mecca.","example":"Main branch is Sunnism: Successor to Muhammad is chosen by leader. Shia: successor is blood of Muhammad (Iraq/Iran)","spice":["Social","Political","Cultural"],"process":["Cultural Diffusion","Cultural Syncretism & Reform"],"why":"Islam spread through merchants, scholars, missionaries, and conquest, connecting diverse societies. Local customs influenced Islamic practices, while disagreements over religious and political leadership contributed to distinct traditions, including Sunni and Shi’a Islam."},{"term":"Abbasid Caliphate","unit":1,"definition":"Islamic empire that ruled much of Middle East from 750 to 1258 governed from Baghdad. Created Islamic golden age.","example":"Used bureaucracy, meritocracy, infrastructure and taxing trade to expand. Shift away from these things helped lead to its collapse.","spice":["Political","Cultural","Economic"],"process":["State Consolidation","Political Fragmentation"],"why":"The Abbasids supported centers of learning, trade, and cultural exchange across Afro-Eurasia. Over time regional dynasties gained autonomy, illustrating how even influential empires can experience political fragmentation."},{"term":"Mongols","unit":1,"definition":"Pastoral nomadic peoples from Central Asian steppes united under Chinggis Khan creating largest land empire in history.","example":"Brutal Mongol conquest of China and Central Asia led to revival of Silk Road trade.","spice":["Social","Political","Economic"],"process":["State Formation & Expansion","Cultural Diffusion"],"why":"Short lived but disruption from conquests and forced migrations of peoples led to more cultural and religious diffusion/spread. Renewed European interests in exploring to find a way to Asia. Destroyed Abbasid Caliphate starting shift of power from Asia to Europe."},{"term":"Hinduism","unit":1,"definition":"Religion of many traditions all emphasizing karma, reincarnation, and liberation from cycle of rebirth. Sects focus on a god who embodies an aspect of a single god.","example":"Hinduism was created as a blend of many local religions in India leading to a society somewhat loosely connected by ideas.","spice":["Social","Cultural"],"process":["Social Organization & Change","Cultural Syncretism & Reform"],"why":"A key point of unity was the caste system based on the cycles of reincarnation. You are born to a status and cannot raise or lower it until your next life. Maintains social order but leads to constant unrest and hard to spread culture to other areas."},{"term":"Syncretism","unit":1,"definition":"Blending of beliefs, traditions, or cultural practices from different societies into a new form.","example":"Southeast Asia combined Hindu/Buddhist beliefs to create a political hierarchy. Bhakti Movement combined Hinduism and Islam to adapt to invading Mughal Empire.","spice":["Cultural"],"process":["Cultural Syncretism & Reform","Cultural Diffusion"],"why":"Allows imported religious ideas to become acceptable by adapting local customs and values. Blending often hints at major changes occurring in the world. Blending traditions could make new beliefs meaningful to communities with established practices."},{"term":"Matrilineal","unit":1,"definition":"System in which inheritance follows the mother's family line. Patrilineal is the opposite.","example":"Mayan society focused on empowerment of women. Opposite of most other societies.","spice":["Social","Political"],"process":["Social Organization & Change","Legitimization & Challenges to Authority"],"why":"Matrilineal inheritance traces family membership or property through the mother’s line, but does not automatically mean women hold all political power. Different inheritance customs shape families, wealth, and leadership succession."},{"term":"Mayan Society","unit":1,"definition":"Mesoamerican civilization organized around independent city states with hereditary elites and religious rulers.","example":"Loose structure of Mayan society prevented them from working together to survive climate change as rainfall dropped.","spice":["Social","Political","Environmental Interaction","Cultural"],"process":["Political Fragmentation","Environmental Adaptation & Change"],"why":"Independent Maya city-states produced major achievements in writing, astronomy, mathematics, and architecture. Rivalries, warfare, environmental pressures, and changing trade patterns affected different cities in different ways."},{"term":"Aztec Society","unit":1,"definition":"Highly centralized society composed of a god emperor, priest elite, and warrior class controlling vast number of slaves.","example":"Empire based on military conquest forcing vanquished to pay tribute.","spice":["Social","Political","Economic","Cultural"],"process":["State Formation & Expansion","State Consolidation"],"why":"The Mexica expanded their tribute empire through conquest and alliances, enriching Tenochtitlan while generating resentment among some subject peoples. Spanish invaders exploited those rivalries and gained essential Indigenous allies"},{"term":"Inca Society","unit":1,"definition":"Highly centralized state with a god emperor, feudal hierarchy, and taxes paid in labor.","example":"The mita labor system was used to gain massive amount of labor to build infrastructure like mountain roads, terraces, temples, and cities in mountains.","spice":["Social","Political","Environmental Interaction","Economic"],"process":["State Consolidation","Environmental Adaptation & Change"],"why":"The Inca used state-directed labor and roads to integrate their mountain empire and support agriculture and armies. Conflict over succession, disease, and alliances with groups resisting Inca rule aided the Spanish conquest."},{"term":"Theocracy","unit":1,"definition":"Political system where government claims it has divine approval from a god or gods.","example":"Inca and Aztec rulers claimed to be \"sun kings\" who control whether the sun rises or not. Disobey and night will stay!","spice":["Political"],"process":["Legitimization & Challenges to Authority","State Consolidation"],"why":"Where authority comes from changes your society. Power from gods means priests control and determine rules of society. Power from the people means people get to vote and decide."},{"term":"State Building in West Africa","unit":1,"definition":"Based on kinship ties with aversion to central authority. Centralized states grew from controlling Saharan trade and forced or slave labor.","example":"Ghana and Mali controlled gold, ivory, and slaves selling to Muslim traders for salt, copper, and cloth.","spice":["Political","Environmental Interaction"],"process":["State Formation & Expansion","Expansion of Trade Networks"],"why":"Environment shapes trade in a region. States who can take advantage of that environment controlling strategic resources or locations gain power. States gained influence by taxing trade and controlling valuable resources and routes."},{"term":"State Building in East Africa","unit":1,"definition":"States adapted to the environment to grow and thrive.","example":"Zimbabwe was remote but used gold to gain influence in Indian Ocean trade. Many people moved there causing it to overgraze the land and collapse. Ethiopia was in remote mountains. Less influenced by Muslim merchants and forced on self-reliance.","spice":["Political","Environmental Interaction"],"process":["State Formation & Expansion","Environmental Adaptation & Change"],"why":"People must creatively used their resources to develop. Societies in strategic locations use it to control and tax trade. Societies with valuable resources use to it to trade for things difficult for them to produce. Environmental conditions and access to trade shaped different paths to political and economic power."},{"term":"Manorial System","unit":1,"definition":"System in Europe of self-sufficient estates that produced everything they needed.","example":"Collapse of the Roman Empire led to collapse in trade in Europe forcing new societies to take care of their own needs and slowing development.","spice":["Social","Economic"],"process":["Social Organization & Change","Economic Transformation"],"why":"Manors organized agricultural labor and local obligations in much of medieval Europe. Agricultural production supported regional populations, while the growth of towns and trade gradually changed many of these relationships."},{"term":"European Challenges to Authority","unit":1,"definition":"European trend to shift from theocracy and god kings towards democracy.","example":"1215, nobles forced English king to sign Magna Carta limiting the kings power and leading to a parliament. Great Schism split Christianity to Catholic and Eastern Orthodox, challenging authority of priests to establish rulers.","spice":["Political","Cultural"],"process":["Legitimization & Challenges to Authority","Political Fragmentation"],"why":"Conflicts involving monarchs, nobles, towns, and religious institutions created limits and challenges to some established authorities. These struggles did not establish modern democracy immediately, but they reshaped later political institutions."},{"term":"Primogeniture","unit":1,"definition":"System where eldest son inherits all of a family's land upon death of its patriarch.","example":"The death of a king would lead to the 1st prince inheriting the throne.","spice":["Social","Political"],"process":["Social Organization & Change","Legitimization & Challenges to Authority"],"why":"If one child inherits everything, then the others get nothing. This pressures European men to fight and explore to secure wealth if they were not 1st in-line to inherit. Also leads to many conflicts to seize the full inheritance. Concentrating inheritance in one heir could preserve estates while creating rivalries among relatives."},{"term":"Crusades","unit":1,"definition":"Islamic expansion towards Europe leads to call by Catholic Church for all Christians to take Jerusalem, a Christian holy city.","example":"Crusades temporarily united feuding Christian kingdoms in a single goal of defeating Islam rule in modern day Israel/Palestine.","spice":["Political","Cultural"],"process":["Legitimization & Challenges to Authority","State Formation & Expansion"],"why":"The Pope may have called to try to strengthen his authority and try to unite Europe into something like a Roman Empire. The crusades led to Europe being reintroduced to the Silk Road, lost technologies, and increasing their desire to trade across the world."},{"term":"Renaissance","unit":1,"definition":"Crusades and resulting growth in trade leads to a rebirth of European interest in arts and sciences. New ideas spread that will lead to the modern world.","example":"Idea of humanism that people are individuals and not part of a machine or state. Focused on people learning to read and write.","spice":["Social","Cultural"],"process":["Cultural Syncretism & Reform","Cultural Diffusion"],"why":"Begins process of weakening Catholic Church authority, leading to rise of more secular governments and idea of nationalism, that people are unified by culture and beliefs and not an all powerful god emperor or unaccountable authority."}]};
+
+const UNITS = {
+  1: { name: "The Global Tapestry",           yrs: "1200–1450" },
+  2: { name: "Networks of Exchange",          yrs: "1200–1450" },
+  3: { name: "Land-Based Empires",            yrs: "1450–1750" },
+  4: { name: "Transoceanic Interconnections", yrs: "1450–1750" },
+};
+const SPICE = ["Social", "Political", "Environmental Interaction", "Cultural", "Economic", "Technology"];
+const PROCESSES = DATA.processes;               // the 12 Key Processes, in your chart's order
+
+function slug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+const CARDS = DATA.cards.map(c => Object.assign({ id: slug(c.term) }, c));
+const BYID = {};
+CARDS.forEach(c => { BYID[c.id] = c; });
+
+/* ---- 2. Small helpers ----------------------------------------------------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+function shuffle(a) {                            // Fisher-Yates, returns a new array
+  a = a.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+const sameSet = (a, b) => a.size === b.size && [...a].every(x => b.has(x));
+
+/* ---- 3. Saved state ------------------------------------------------------- */
+/* S.cards[id] = per-card memory:
+     b    Leitner box 0-5 (0 = new or forgotten, 5 = rock solid)
+     due  timestamp when it should be reviewed again
+     seen / ok / bad   how many times answered, right, wrong
+     tg / tt           SPICE-T and Process points earned / possible (tag drills + mock tests)
+     last timestamp of the latest answer                                              */
+const KEY = "vocab-conquest-v1";
+const DAY = 864e5;
+const STEPS = [0, 10 * 60e3, DAY, 3 * DAY, 7 * DAY, 16 * DAY];   // wait time for each box
+
+function freshState() { return { v: 1, u: 0, cards: {}, xp: 0, days: {}, testDate: "", bestLightning: 0, sessions: 0 }; }
+let S = freshState();
+
+function adopt(obj) {                            // accept saved data, tolerate junk
+  const f = freshState();
+  if (obj && typeof obj === "object") {
+    f.u = +obj.u || 0; f.xp = +obj.xp || 0; f.testDate = typeof obj.testDate === "string" ? obj.testDate : "";
+    f.bestLightning = +obj.bestLightning || 0; f.sessions = +obj.sessions || 0;
+    if (obj.days && typeof obj.days === "object") f.days = obj.days;
+    if (obj.cards && typeof obj.cards === "object") {
+      for (const id in obj.cards) if (BYID[id]) {
+        const c = obj.cards[id] || {};
+        f.cards[id] = { b: Math.min(5, Math.max(0, +c.b || 0)), due: +c.due || 0, seen: +c.seen || 0, ok: +c.ok || 0,
+                        bad: +c.bad || 0, tg: +c.tg || 0, tt: +c.tt || 0, last: +c.last || 0 };
+      }
+    }
+  }
+  S = f;
+}
+function loadLocal() { try { const raw = localStorage.getItem(KEY); if (raw) adopt(JSON.parse(raw)); } catch (e) { /* storage blocked: start fresh */ } }
+function saveLocal() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* ignore */ } }
+function save() { S.u = Date.now(); saveLocal(); if (typeof queueSync === "function") queueSync(); }
+
+const ZERO = Object.freeze({ b: 0, due: 0, seen: 0, ok: 0, bad: 0, tg: 0, tt: 0, last: 0 });
+const getC = id => S.cards[id] || ZERO;
+function mut(id) { return S.cards[id] || (S.cards[id] = { b: 0, due: 0, seen: 0, ok: 0, bad: 0, tg: 0, tt: 0, last: 0 }); }
+
+/* tier: 0 = untouched, 1 = learning, 2 = familiar, 3 = mastered (box 4-5) */
+function tier(id) { const c = getC(id); if (!c.seen) return 0; return c.b >= 4 ? 3 : c.b >= 2 ? 2 : 1; }
+const isDue = id => { const c = getC(id); return c.seen > 0 && c.due <= Date.now(); };
+
+/* ---- 4. Spaced repetition -------------------------------------------------
+   q = 0 Again, 1 Hard, 2 Good, 3 Easy.
+   Again drops the card to box 0. Hard keeps its box. Good moves up one box,
+   Easy moves up two. The box decides how long until you see it again.
+   `cap` limits how high a lower-effort mode (multiple choice) may lift a card. */
+function nextState(c, q, cap) {
+  const top = cap == null ? 5 : cap;
+  let b = c.b;
+  if (q === 0) b = 0;
+  else if (q === 1) b = Math.max(1, Math.min(b, top));
+  else b = Math.min(top, Math.max(b, b + (q === 3 ? 2 : 1)));
+  const wait = q === 0 ? 60e3 : q === 1 ? Math.max(STEPS[b] * 0.5, 10 * 60e3) : STEPS[b];
+  return { b, wait };
+}
+function waitLabel(ms) {
+  if (ms < 90e3) return "<1m";
+  if (ms < 3600e3) return Math.round(ms / 60e3) + "m";
+  if (ms < DAY) return Math.round(ms / 3600e3) + "h";
+  return Math.round(ms / DAY) + "d";
+}
+
+function dayKey(d) {
+  d = d || new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function addXP(n) {
+  S.xp += n;
+  const k = dayKey(); const d = S.days[k] || (S.days[k] = { n: 0, xp: 0 });
+  d.xp += n;
+}
+function grade(id, q, opts) {
+  opts = opts || {};
+  const c = mut(id), now = Date.now();
+  const nx = nextState(c, q, opts.cap);
+  c.b = nx.b; c.due = now + nx.wait; c.last = now; c.seen++;
+  if (q === 0) c.bad++; else c.ok++;
+  const k = dayKey(); (S.days[k] || (S.days[k] = { n: 0, xp: 0 })).n++;
+  if (opts.xp) addXP(opts.xp);
+  save();
+}
+
+/* ---- 5. Ranks, streak, stats ---------------------------------------------- */
+const RANKS = [
+  ["Nomad", 0], ["Caravaneer", 120], ["Scribe", 350], ["Bureaucrat", 700],
+  ["Daimyo", 1200], ["Vizier", 1900], ["Sultan", 2800], ["Great Khan", 4000],
+];
+function rankInfo(xp) {
+  xp = xp == null ? S.xp : xp;
+  let i = 0; while (i + 1 < RANKS.length && xp >= RANKS[i + 1][1]) i++;
+  const cur = RANKS[i], nxt = RANKS[i + 1];
+  return { i, name: cur[0], next: nxt ? nxt[0] : null, pct: nxt ? (xp - cur[1]) / (nxt[1] - cur[1]) : 1, toNext: nxt ? nxt[1] - xp : 0 };
+}
+function streak() {
+  let n = 0; const d = new Date();
+  if (!(S.days[dayKey(d)] && S.days[dayKey(d)].n)) d.setDate(d.getDate() - 1);   // today not studied yet: count from yesterday
+  while (S.days[dayKey(d)] && S.days[dayKey(d)].n) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+function poolOf(units) { return CARDS.filter(c => units.has(c.unit)); }
+function stats(pool) {
+  const t = [0, 0, 0, 0]; let due = 0;
+  pool.forEach(c => { t[tier(c.id)]++; if (isDue(c.id)) due++; });
+  return { t, due, total: pool.length, unseen: t[0] };
+}
+function daysLeft() {
+  if (!S.testDate) return null;
+  const end = new Date(S.testDate + "T00:00:00"), now = new Date(); now.setHours(0, 0, 0, 0);
+  const n = Math.round((end - now) / DAY);
+  return isNaN(n) ? null : n;
+}
+function newPerDay(pool) {
+  const unseen = pool.filter(c => !getC(c.id).seen).length, left = daysLeft();
+  if (left != null && left > 0) return Math.min(30, Math.max(5, Math.ceil(unseen / Math.max(1, left - 2))));
+  return 12;
+}
+
+/* Smart queue: overdue cards first (most overdue first), then new cards up to
+   the daily quota, then the weakest cards to fill the session. */
+function buildQueue(pool, size) {
+  const due = pool.filter(c => isDue(c.id)).sort((a, b) => getC(a.id).due - getC(b.id).due);
+  const fresh = shuffle(pool.filter(c => !getC(c.id).seen)).slice(0, newPerDay(pool));
+  let q = due.concat(fresh).slice(0, size);
+  if (q.length < size) {
+    const have = new Set(q.map(c => c.id));
+    const weak = pool.filter(c => !have.has(c.id) && getC(c.id).seen)
+      .sort((a, b) => getC(a.id).b - getC(b.id).b || getC(a.id).due - getC(b.id).due);
+    q = q.concat(weak.slice(0, size - q.length));
+  }
+  return q.map(c => c.id);
+}
+
+/* ==========================================================================
+   PART 2 — SHELL AND HOME SCREEN
+   One render() redraws the whole screen from the current `view`.
+   Each view function returns { html, dock, after }:
+     html  goes in #app, dock goes in the fixed bottom bar, after() runs once drawn.
+   Clicks are handled in one place: any element with data-act="name" calls ACT[name].
+   ========================================================================== */
+
+let view = "home";                       // home | flip | mc | tags | mockSetup | mock | mockDone | summary
+let FILTER = new Set([1, 2, 3, 4]);      // which units the sessions draw from
+let SES = null;                          // the running study session (see part 3)
+let sheetId = null;                      // card open in the detail sheet
+let syncState = "local";                 // local | cloud (set by part 4)
+const ACT = {};                          // click handlers
+const KEYS = {};                         // per-view keyboard handlers
+
+const labelSpice = s => s === "Environmental Interaction" ? "Env. Interaction" : s;
+const chipRow = list => '<div class="chips">' + list.map(x => '<span class="chip static">' + esc(x) + "</span>").join("") + "</div>";
+
+/* The full answer side of a card: all five parts of your chart entry. */
+function cardBack(c) {
+  return (c.flag ? '<div class="note">' + esc(c.flag) + "</div>" : "") +
+    '<div class="sect"><span class="label">Definition</span><p>' + esc(c.definition) + "</p></div>" +
+    '<div class="sect"><span class="label">Unit ' + c.unit + " example</span><p>" + esc(c.example) + "</p></div>" +
+    '<div class="sect"><span class="label">SPICE-T</span>' + chipRow(c.spice.map(labelSpice)) + "</div>" +
+    '<div class="sect"><span class="label">Process</span>' + chipRow(c.process) + "</div>" +
+    '<div class="sect"><span class="label">Why it matters</span><p>' + esc(c.why) + "</p></div>";
+}
+
+function toast(msg) {
+  const t = $("toast"); t.innerHTML = '<div class="toast" role="status">' + esc(msg) + "</div>";
+  clearTimeout(toast.h); toast.h = setTimeout(() => { t.innerHTML = ""; }, 2600);
+}
+
+function render() {
+  const v = { home: homeView, flip: flipView, mc: mcView, tags: tagsView, mockSetup: mockSetupView,
+              mock: mockView, mockDone: mockDoneView, summary: summaryView }[view]();
+  $("app").innerHTML = v.html;
+  $("dock").innerHTML = v.dock ? '<div class="dock"><div class="dock-in">' + v.dock + "</div></div>" : "";
+  document.body.classList.toggle("has-dock", !!v.dock);
+  renderSheet();
+  updateSyncBadge();
+  if (v.after) v.after();
+}
+function go(v) { view = v; render(); window.scrollTo(0, 0); }
+
+function updateSyncBadge() {
+  const el = $("syncBadge");
+  if (el) el.textContent = syncState === "cloud" ? "Progress saved to your account" : "Progress saved on this device";
+}
+
+/* ---- Home ----------------------------------------------------------------- */
+function homeView() {
+  const pool = poolOf(FILTER), st = stats(pool), r = rankInfo(), sk = streak();
+  const all = stats(CARDS);
+  const queue = buildQueue(pool, 20), newN = Math.min(st.unseen, newPerDay(pool));
+  const left = daysLeft();
+  const planText = left == null ? "Set your test date and the app paces new cards for you."
+    : left < 0 ? "That date has passed. Pick the new test date."
+    : left === 0 ? "Test day. Run a mock test, then rest."
+    : left + (left === 1 ? " day" : " days") + " left. " + all.unseen + " terms not started, aim for " + newPerDay(CARDS) + " new a day.";
+
+  const unitChips = [1, 2, 3, 4].map(u =>
+    '<button class="chip' + (FILTER.has(u) ? " on" : "") + '" data-act="unit" data-u="' + u + '" aria-pressed="' + FILTER.has(u) + '">Unit ' + u + "</button>").join("");
+
+  const modes = [
+    ["flip", "Flip and write", "Type what you remember, flip, then rate yourself. Spaced repetition decides what returns."],
+    ["mc", "Identify", "Read a definition, example or importance line, pick the term it belongs to."],
+    ["tags", "SPICE-T and Process", "Pick the right SPICE-T categories and Key Processes for each term."],
+    ["mockSetup", "Mock test", "Test format: a blank, then the description. Fill each blank from a word bank, then get graded."],
+    ["lightning", "Lightning round", "60 seconds, multiple choice, streaks multiply your score. Best: " + S.bestLightning],
+  ].map(m => '<button class="mode" data-act="mode" data-m="' + m[0] + '"><b>' + m[1] + "</b><span>" + esc(m[2]) + "</span></button>").join("");
+
+  const tiles = [1, 2, 3, 4].map(u => {
+    const cs = CARDS.filter(c => c.unit === u), solid = cs.filter(c => tier(c.id) >= 2).length;
+    return '<div style="opacity:' + (FILTER.has(u) ? 1 : .45) + '"><div class="unit-head"><h3>Unit ' + u + " · " + UNITS[u].name +
+      '</h3><span class="label">' + UNITS[u].yrs + " · " + solid + "/" + cs.length + " solid</span></div>" +
+      '<div class="tiles">' + cs.map(c => '<button class="tile t' + tier(c.id) + (isDue(c.id) ? " due" : "") +
+        '" data-act="open" data-id="' + c.id + '">' + esc(c.term) + "</button>").join("") + "</div></div>";
+  }).join("");
+
+  const html = '<div class="top"><div class="brand">Vocab Conquest<small>AP World History · Units 1–4</small></div>' +
+    '<div class="sync" id="syncBadge"></div></div>' +
+
+    '<div class="panel rank"><div><span class="label">Rank</span><h2>' + r.name + "</h2></div>" +
+      '<div class="stat"><b>' + sk + '</b><div class="label">day streak</div></div>' +
+      '<div style="grid-column:1/-1"><div class="bar" aria-hidden="true"><i style="width:' + Math.round(r.pct * 100) + '%"></i></div>' +
+      '<div class="label" style="margin-top:6px">' + S.xp + " XP" + (r.next ? " · " + r.toNext + " to " + r.next : " · top rank") + "</div></div></div>" +
+
+    '<button class="btn primary cta" data-act="smart"' + (queue.length ? "" : " disabled") + "><b>" +
+      (queue.length ? "Start today's session" : "Nothing due right now") + "</b><span>" +
+      (queue.length ? queue.length + " cards · " + st.due + " due · " + newN + " new" : "Pick a mode below to keep drilling.") + "</span></button>" +
+
+    '<div class="panel plan row spread"><span class="grow" style="min-width:200px">' + esc(planText) + "</span>" +
+      '<label class="row"><span class="label">Test date</span><input type="date" id="testDate" value="' + esc(S.testDate) + '"></label></div>' +
+
+    '<div class="row"><span class="label">Study from</span>' + unitChips + "</div>" +
+    '<div class="modes">' + modes + "</div>" +
+
+    '<div class="panel"><div class="row spread"><h2 style="font-size:20px">Territory map</h2><span class="label">' + all.t[3] + " of " + all.total + " mastered</span></div>" +
+      '<div class="bar gold" style="margin:10px 0 12px" aria-hidden="true"><i style="width:' + Math.round(all.t[3] / all.total * 100) + '%"></i></div>' +
+      '<div class="legend"><span><i style="background:var(--t0)"></i>Not started</span><span><i style="background:var(--t1)"></i>Learning</span>' +
+      '<span><i style="background:var(--t2)"></i>Familiar</span><span><i style="background:var(--t3)"></i>Mastered</span>' +
+      '<span><i style="background:var(--bad);border-radius:50%"></i>Due for review</span></div>' +
+      '<div class="list" style="gap:16px;margin-top:14px">' + tiles + "</div>" +
+      '<p class="muted" style="font-size:13.5px;margin:12px 0 0">Tap any tile to read the card. A term counts as mastered after you have recalled it correctly several times across days.</p></div>' +
+
+    '<details class="panel backup"><summary>Backup and reset</summary><div class="list" style="margin-top:12px">' +
+      '<p class="muted" style="margin:0;font-size:14px">Progress saves automatically. To move it to another browser, copy the code below and paste it there.</p>' +
+      '<textarea id="exportBox" readonly aria-label="Progress code"></textarea>' +
+      '<div class="row"><button class="btn small" data-act="export">Show and copy my code</button></div>' +
+      '<textarea id="importBox" class="short" placeholder="Paste a progress code here" aria-label="Paste progress code"></textarea>' +
+      '<div class="row"><button class="btn small" data-act="import">Load this code</button>' +
+      '<button class="btn small ghost" data-act="reset" id="resetBtn">Reset all progress</button></div></div></details>';
+
+  return { html, dock: "" };
+}
+
+/* ---- Card detail sheet ---------------------------------------------------- */
+function renderSheet() {
+  const el = $("modal");
+  if (!sheetId) { el.innerHTML = ""; return; }
+  const c = BYID[sheetId], cs = getC(c.id), T = ["Not started", "Learning", "Familiar", "Mastered"][tier(c.id)];
+  el.innerHTML = '<div class="overlay" data-act="closeSheet" data-backdrop="1"><div class="sheet" role="dialog" aria-modal="true" aria-label="' + esc(c.term) + '">' +
+    '<div class="row spread"><span class="label">Unit ' + c.unit + " · " + T + (cs.seen ? " · " + cs.ok + " right, " + cs.bad + " missed" : "") + "</span>" +
+    '<button class="btn small ghost" data-act="closeSheet">Close</button></div>' +
+    '<div class="term">' + esc(c.term) + "</div>" + cardBack(c) +
+    '<button class="btn primary block" data-act="studyOne" data-id="' + c.id + '">Study just this card</button></div></div>';
+}
+
+/* ---- Shared click and key handling ---------------------------------------- */
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-act]");
+  if (!t) return;
+  if (t.dataset.backdrop && e.target !== t) return;          // clicks inside the sheet do not close it
+  const f = ACT[t.dataset.act];
+  if (f) f(t.dataset, t, e);
+});
+document.addEventListener("change", e => {
+  if (e.target.id === "testDate") { S.testDate = e.target.value || ""; save(); render(); }
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && sheetId) { sheetId = null; renderSheet(); return; }
+  if (e.metaKey || e.altKey) return;
+  const typing = /^(TEXTAREA|INPUT)$/.test(e.target.tagName);
+  const f = KEYS[view];
+  if (f) f(e, typing);
+});
+
+ACT.unit = d => {
+  const u = +d.u;
+  if (FILTER.has(u)) { if (FILTER.size > 1) FILTER.delete(u); } else FILTER.add(u);
+  render();
+};
+ACT.open = d => { sheetId = d.id; renderSheet(); };
+ACT.closeSheet = () => { sheetId = null; renderSheet(); };
+ACT.export = () => {
+  const code = btoa(unescape(encodeURIComponent(JSON.stringify(S))));
+  const box = $("exportBox"); box.value = code; box.select();
+  try { navigator.clipboard.writeText(code).then(() => toast("Code copied"), () => toast("Select the code and copy it")); }
+  catch (err) { toast("Select the code and copy it"); }
+};
+ACT.import = () => {
+  const raw = $("importBox").value.trim();
+  try { adopt(JSON.parse(decodeURIComponent(escape(atob(raw))))); save(); render(); toast("Progress loaded"); }
+  catch (err) { toast("That code did not work. Copy it again in full."); }
+};
+ACT.reset = (d, el) => {
+  if (!el.dataset.sure) { el.dataset.sure = "1"; el.textContent = "Tap again to erase everything"; return; }
+  S = freshState(); save(); render(); toast("Progress reset");
+};
+
+/* ==========================================================================
+   PART 3A — STUDY SESSIONS: starting, flip cards, multiple choice, lightning
+   A session is a plain object kept in SES:
+     { mode, queue:[card ids], i:index, missed:[ids], xp0:XP at start, rank0:rank at start, ... }
+   ========================================================================== */
+
+function startSession(mode, ids, extra) {
+  SES = Object.assign({ mode, queue: ids.slice(), i: 0, ok: 0, bad: 0, missed: [], xp0: S.xp, rank0: rankInfo().i, retries: {} }, extra || {});
+  S.sessions++;
+  view = mode;
+  if (mode === "flip") Object.assign(SES, { revealed: false, answer: "" });
+  if (mode === "mc") { SES.picked = null; makeQuestion(); }
+  if (mode === "tags") Object.assign(SES, { sel: { spice: new Set(), proc: new Set() }, checked: false, hint: false });
+  render(); window.scrollTo(0, 0);
+}
+/* Free drill order: weakest cards first, ties shuffled. */
+function drillQueue(n) {
+  return shuffle(poolOf(FILTER)).sort((a, b) => tier(a.id) - tier(b.id)).slice(0, n).map(c => c.id);
+}
+function currentId() { return SES.queue[SES.i]; }
+
+function studyTop() {
+  const done = SES.timed ? "" : Math.min(SES.i + 1, SES.queue.length) + "/" + SES.queue.length;
+  const pct = SES.timed ? 0 : Math.round(SES.i / SES.queue.length * 100);
+  return '<div class="study-top"><button class="btn small ghost" data-act="end">End</button>' +
+    (SES.timed ? '<div class="bar"><i id="timerBar" style="width:100%"></i></div>'
+               : '<div class="bar" aria-hidden="true"><i style="width:' + pct + '%"></i></div>') +
+    '<span class="label">' + (SES.timed ? '<span id="timer">60</span>s' : done) + "</span></div>";
+}
+function advance() {
+  SES.i++;
+  if (SES.timed && SES.i >= SES.queue.length) SES.queue = SES.queue.concat(shuffle(poolOf(FILTER)).map(c => c.id));
+  if (SES.i >= SES.queue.length) { finishSession(); return false; }
+  return true;
+}
+function finishSession() {
+  if (SES.tick) { clearInterval(SES.tick); SES.tick = null; }
+  if (SES.mode === "mock") { view = "mockDone"; render(); window.scrollTo(0, 0); return; }
+  view = "summary"; render(); window.scrollTo(0, 0);
+}
+
+ACT.smart = () => { const q = buildQueue(poolOf(FILTER), 20); if (q.length) startSession("flip", q); };
+ACT.mode = d => {
+  const m = d.m;
+  if (m === "mockSetup") { go("mockSetup"); return; }
+  if (m === "lightning") {
+    const ids = shuffle(poolOf(FILTER)).map(c => c.id);
+    startSession("mc", ids, { timed: true, deadline: Date.now() + 60000, score: 0, combo: 0, best: 0 }); return;
+  }
+  startSession(m, drillQueue(20));
+};
+ACT.studyOne = d => { sheetId = null; startSession("flip", [d.id]); };
+ACT.home = () => { view = "home"; SES = null; render(); window.scrollTo(0, 0); };
+ACT.end = () => {
+  if (SES && SES.tick) {
+    clearInterval(SES.tick); SES.tick = null;
+    if (SES.timed) { S.bestLightning = Math.max(S.bestLightning, SES.score); addXP(Math.round(SES.score / 4)); save(); }
+  }
+  if (SES && SES.mode !== "mock" && (SES.ok + SES.bad) > 0) finishSession(); else ACT.home();
+};
+
+/* ---- Flip and write ------------------------------------------------------- */
+function flipView() {
+  const c = BYID[currentId()];
+  if (!SES.revealed) {
+    return {
+      html: '<div class="wrap">' + studyTop() + '<div class="card"><span class="label">Unit ' + c.unit + " · " + UNITS[c.unit].name + "</span>" +
+        '<div class="term">' + esc(c.term) + "</div>" +
+        '<div class="sect"><label class="label" for="ans">Write what you remember (optional, but it works much better)</label>' +
+        '<textarea id="ans" placeholder="Definition, example, SPICE-T, why it matters..."></textarea></div></div></div>',
+      dock: '<button class="btn primary" data-act="reveal">Reveal answer<small>Enter</small></button>',
+      after: () => { const a = $("ans"); if (a) a.focus({ preventScroll: true }); },
+    };
+  }
+  const labels = ["Again", "Hard", "Good", "Easy"];
+  const dock = labels.map((l, q) => '<button class="btn r' + q + '" data-act="rate" data-q="' + q + '">' + l +
+    "<small>" + (q + 1) + " · " + waitLabel(nextState(getC(c.id), q).wait) + "</small></button>").join("");
+  return {
+    html: '<div class="wrap">' + studyTop() + '<div class="card"><span class="label">Unit ' + c.unit + "</span>" +
+      '<div class="term">' + esc(c.term) + "</div>" +
+      (SES.answer.trim() ? '<div class="sect"><span class="label">What you wrote</span><div class="yours">' + esc(SES.answer) + "</div></div>" : "") +
+      cardBack(c) + "</div></div>",
+    dock,
+  };
+}
+ACT.reveal = () => {
+  if (view !== "flip" || SES.revealed) return;
+  const a = $("ans"); SES.answer = a ? a.value : "";
+  SES.revealed = true; render(); window.scrollTo(0, 0);
+};
+ACT.rate = d => {
+  const q = +d.q, id = currentId();
+  grade(id, q, { xp: [0, 4, 8, 12][q] });
+  if (q === 0) {
+    SES.bad++; if (!SES.missed.includes(id)) SES.missed.push(id);
+    SES.retries[id] = (SES.retries[id] || 0) + 1;
+    if (SES.retries[id] <= 2) SES.queue.splice(Math.min(SES.i + 5, SES.queue.length), 0, id);   // see it again shortly
+  } else SES.ok++;
+  SES.revealed = false; SES.answer = "";
+  if (advance()) { render(); window.scrollTo(0, 0); }
+};
+KEYS.flip = (e, typing) => {
+  if (!SES.revealed) {
+    if ((typing && e.key === "Enter" && !e.shiftKey) || (!typing && (e.key === "Enter" || e.key === " "))) { e.preventDefault(); ACT.reveal(); }
+  } else if (!typing && /^[1-4]$/.test(e.key)) { e.preventDefault(); ACT.rate({ q: +e.key - 1 }); }
+};
+
+/* ---- Identify (multiple choice) and Lightning ------------------------------ */
+const GENERIC = new Set(["trade", "system", "society", "empire", "exchange", "communities", "community", "dynasty", "travelers", "technology",
+  "rule", "state", "building", "authority", "challenges", "european", "road", "west", "east", "africa", "colonial", "labor", "slavery",
+  "ocean", "indian", "trading", "companies", "company", "cultural", "diffusion", "goods", "luxury", "animals", "dying", "great", "middle"]);
+const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/* Hide the term (and its distinctive words) so a clue does not give itself away. */
+function mask(text, term) {
+  const BLOCK = "▢▢▢";
+  const words = term.replace(/[():\/,]/g, " ").split(/\s+/).filter(w => w.length >= 4 && !GENERIC.has(w.toLowerCase()));
+  let out = text.replace(new RegExp(escRe(term.replace(/\s*\(.*\)/, "")) + "(?:s|es)?", "gi"), BLOCK);
+  words.forEach(w => {
+    const stem = w.length >= 6 ? w.slice(0, w.length - 1) : w;
+    out = out.replace(new RegExp("\\b" + escRe(stem) + "\\w*", "gi"), BLOCK);
+  });
+  return out;
+}
+function distractors(c, n) {
+  const stem = w => w.toLowerCase().replace(/[^a-z]/g, "").slice(0, 5);
+  const mine = new Set(c.term.split(/\s+/).filter(w => w.length > 3).map(stem));
+  const cand = CARDS.filter(x => x.id !== c.id && !x.term.split(/\s+/).some(w => w.length > 3 && mine.has(stem(w))));
+  const same = shuffle(cand.filter(x => x.unit === c.unit)), other = shuffle(cand.filter(x => x.unit !== c.unit));
+  return same.slice(0, n - 1).concat(other).slice(0, n).map(x => x.id);
+}
+const Q_TYPES = [
+  ["definition", "Which term is defined this way?"],
+  ["example", "Which term does this example illustrate?"],
+  ["why", "Which term does this explain the importance of?"],
+];
+function makeQuestion() {
+  // Descriptions are what the real test shows, so definitions come up most often.
+  const c = BYID[currentId()], t = Math.random() < 0.6 ? Q_TYPES[0] : Q_TYPES[1 + Math.floor(Math.random() * 2)];
+  SES.picked = null;
+  SES.q = { prompt: t[1], text: mask(c[t[0]], c.term), opts: shuffle([c.id].concat(distractors(c, 3))) };
+}
+function mcView() {
+  const c = BYID[currentId()], q = SES.q, done = SES.picked != null;
+  const opts = q.opts.map((id, k) => {
+    let cls = "";
+    if (done) cls = id === c.id ? " right" : id === SES.picked ? " wrong" : "";
+    return '<button class="opt' + cls + '" data-act="pick" data-id="' + id + '"' + (done ? " disabled" : "") + '><span class="k">' + (k + 1) + "</span><span>" + esc(BYID[id].term) + "</span></button>";
+  }).join("");
+  const hud = SES.timed ? '<div class="row spread"><span class="combo">' + SES.score + ' pts</span><span class="label">Streak ' + SES.combo + " · x" + comboMult() + "</span></div>" : "";
+  const feedback = done && !SES.timed
+    ? '<div class="card"><div class="row"><span class="label">' + (SES.picked === c.id ? "Correct" : "The answer was") + '</span></div><div class="term" style="font-size:26px">' + esc(c.term) + "</div>" + cardBack(c) + "</div>" : "";
+  return {
+    html: '<div class="wrap">' + studyTop() + hud + '<div class="card"><span class="label">' + q.prompt + '</span><div class="q">' + esc(q.text) + "</div></div>" +
+      '<div class="opts">' + opts + "</div>" + feedback + "</div>",
+    dock: done && !SES.timed ? '<button class="btn primary" data-act="next">Next<small>Enter</small></button>' : "",
+    after: SES.timed ? startTimer : null,
+  };
+}
+const comboMult = () => 1 + Math.min(4, Math.floor(SES.combo / 3));
+ACT.pick = d => {
+  if (SES.picked != null) return;
+  const c = BYID[currentId()], right = d.id === c.id;
+  SES.picked = d.id;
+  if (right) {
+    SES.ok++;
+    if (SES.timed) { SES.score += 10 * comboMult(); SES.combo++; SES.best = Math.max(SES.best, SES.combo); }
+    grade(c.id, 1, { cap: 2, xp: SES.timed ? 0 : 5 });        // recognition only lifts a card to box 2
+  } else {
+    SES.bad++; if (!SES.missed.includes(c.id)) SES.missed.push(c.id);
+    if (SES.timed) SES.combo = 0;
+    grade(c.id, 0);
+  }
+  render();
+  if (SES.timed) setTimeout(() => { if (SES && SES.timed && view === "mc" && SES.picked != null) ACT.next(); }, right ? 450 : 1100);
+};
+ACT.next = () => {
+  if (SES.picked == null) return;
+  if (advance()) { makeQuestion(); render(); window.scrollTo(0, 0); }
+};
+KEYS.mc = (e, typing) => {
+  if (typing) return;
+  if (SES.picked == null && /^[1-4]$/.test(e.key)) { const id = SES.q.opts[+e.key - 1]; if (id) { e.preventDefault(); ACT.pick({ id }); } }
+  else if (SES.picked != null && !SES.timed && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); ACT.next(); }
+};
+function startTimer() {
+  if (SES.tick) return;
+  const upd = () => {
+    const left = Math.max(0, SES.deadline - Date.now());
+    const t = $("timer"), b = $("timerBar");
+    if (t) t.textContent = Math.ceil(left / 1000);
+    if (b) b.style.width = (left / 600) + "%";
+    if (left <= 0) {
+      clearInterval(SES.tick); SES.tick = null;
+      S.bestLightning = Math.max(S.bestLightning, SES.score);
+      addXP(Math.round(SES.score / 4)); save();
+      finishSession();
+    }
+  };
+  SES.tick = setInterval(upd, 200); upd();
+}
+
+/* ---- Session summary -------------------------------------------------------- */
+function summaryView() {
+  const s = SES, total = s.ok + s.bad, acc = total ? Math.round(s.ok / total * 100) : 0;
+  const rankNow = rankInfo(), up = rankNow.i > s.rank0;
+  const gained = S.xp - s.xp0;
+  const missed = s.missed.map(id => '<div class="item"><span>' + esc(BYID[id].term) + '</span><button class="btn small" data-act="open" data-id="' + id + '">Review</button></div>').join("");
+  const headline = s.timed ? s.score + " points" : acc + "% correct";
+  return {
+    html: '<div class="wrap"><div class="panel"><span class="label">' + (s.timed ? "Lightning round" : "Session complete") + '</span><div class="big" style="margin:6px 0">' + headline + "</div>" +
+      '<div class="muted">' + total + " answered · " + s.ok + " right · " + s.bad + " missed · +" + gained + " XP" +
+      (s.timed ? " · best streak " + s.best + (s.score >= S.bestLightning && s.score > 0 ? " · new personal best" : "") : "") + "</div>" +
+      (up ? '<div class="note" style="margin-top:12px">Promoted to ' + rankNow.name + ".</div>" : "") + "</div>" +
+      (missed ? '<div class="panel"><h2 style="font-size:18px;margin-bottom:10px">Missed this session</h2><div class="list">' + missed + "</div></div>" : "") + "</div>",
+    dock: (s.missed.length ? '<button class="btn" data-act="studyMissed">Study the missed</button>' : "") + '<button class="btn primary" data-act="home">Back to map</button>',
+  };
+}
+ACT.studyMissed = () => startSession("flip", SES.missed);
+
+/* ==========================================================================
+   PART 3B — SPICE-T / PROCESS DRILL AND THE MOCK TEST
+   Both use the same chip pickers and the same partial-credit scoring:
+   each right pick earns a share of the point, each wrong pick takes one away.
+   ========================================================================== */
+
+function scoreSet(sel, target) {
+  let hits = 0, wrongs = 0;
+  sel.forEach(x => { if (target.has(x)) hits++; else wrongs++; });
+  return { hits, wrongs, pts: Math.max(0, (hits - wrongs) / target.size) };
+}
+/* One group of toggle chips. After checking, chips show right / wrong / missed. */
+function chipGroup(g, items, sel, target, checked) {
+  return '<div class="chips">' + items.map((it, k) => {
+    const on = sel.has(it);
+    let cls = on ? " on" : "";
+    if (checked) cls = on ? (target.has(it) ? " right" : " wrong") : (target.has(it) ? " miss" : "");
+    const label = g === "proc" ? '<span class="n">' + (PROCESSES.indexOf(it) + 1) + "</span>" + esc(it) : esc(labelSpice(it));
+    return '<button class="chip' + cls + '" data-act="tog" data-g="' + g + '" data-v="' + esc(it) + '" aria-pressed="' + on + '"' + (checked ? " disabled" : "") + ">" + label + "</button>";
+  }).join("") + "</div>";
+}
+function tagsTarget(c) { return { spice: new Set(c.spice), proc: new Set(c.process) }; }
+
+/* ---- SPICE-T and Process drill ---------------------------------------------- */
+function tagsView() {
+  const c = BYID[currentId()], s = SES, T = tagsTarget(c);
+  let result = "";
+  if (s.checked) {
+    const a = scoreSet(s.sel.spice, T.spice), b = scoreSet(s.sel.proc, T.proc);
+    result = '<div class="panel row spread"><span><b>SPICE-T</b> ' + Math.round(a.pts * 100) + "% · <b>Process</b> " + Math.round(b.pts * 100) + "%</span>" +
+      '<span class="label">Green = right · dashed = you missed it · red = not on this card</span></div>' +
+      '<details class="panel"><summary>Show the full card</summary><div class="list" style="margin-top:12px">' + cardBack(c) + "</div></details>";
+  }
+  return {
+    html: '<div class="wrap">' + studyTop() + '<div class="card"><span class="label">Unit ' + c.unit + " · tag this term</span>" +
+      '<div class="term">' + esc(c.term) + "</div>" +
+      (s.hint ? '<div class="sect"><span class="label">Definition</span><p>' + esc(c.definition) + "</p></div>"
+              : '<div><button class="btn small" data-act="hint">Show the definition</button></div>') +
+      '<div class="sect"><span class="label">SPICE-T (pick all that apply)</span>' + chipGroup("spice", SPICE, s.sel.spice, T.spice, s.checked) + "</div>" +
+      '<div class="sect"><span class="label">Process (usually one or two)</span>' + chipGroup("proc", PROCESSES, s.sel.proc, T.proc, s.checked) + "</div></div>" + result + "</div>",
+    dock: s.checked ? '<button class="btn primary" data-act="tagNext">Next<small>Enter</small></button>'
+                    : '<button class="btn primary" data-act="tagCheck"' + (s.sel.spice.size || s.sel.proc.size ? "" : " disabled") + ">Check<small>Enter</small></button>",
+  };
+}
+ACT.hint = () => { SES.hint = true; render(); };
+ACT.tog = d => {
+  if (SES.checked) return;
+  const set = SES.sel[d.g];
+  if (set.has(d.v)) set.delete(d.v); else set.add(d.v);
+  render();
+};
+ACT.tagCheck = () => {
+  if (SES.checked || !(SES.sel.spice.size || SES.sel.proc.size)) return;
+  const c = BYID[currentId()], T = tagsTarget(c);
+  const a = scoreSet(SES.sel.spice, T.spice), b = scoreSet(SES.sel.proc, T.proc), avg = (a.pts + b.pts) / 2;
+  const q = avg === 1 ? 2 : avg >= 0.5 ? 1 : 0;
+  grade(c.id, q, { cap: 3, xp: Math.round(avg * 6) });
+  const cs = mut(c.id); cs.tt += 2; cs.tg += a.pts + b.pts; save();
+  if (avg === 1) SES.ok++; else { SES.bad++; if (!SES.missed.includes(c.id)) SES.missed.push(c.id); }
+  SES.checked = true; render();
+};
+ACT.tagNext = () => {
+  if (!SES.checked) return;
+  SES.sel = { spice: new Set(), proc: new Set() }; SES.checked = false; SES.hint = false;
+  if (advance()) { render(); window.scrollTo(0, 0); }
+};
+KEYS.tags = (e, typing) => {
+  if (typing || e.key !== "Enter") return;
+  e.preventDefault(); if (SES.checked) ACT.tagNext(); else ACT.tagCheck();
+};
+
+/* ==========================================================================
+   PART 3C — MOCK TEST (fill-in-the-blank with a word bank)
+   Matches how the real test is formatted: each item is a blank followed by a
+   description, and the bank holds exactly the terms being tested. Pick a term
+   for every blank (each term is used once), then grade the whole test at once.
+   ========================================================================== */
+
+const MOCK = { size: 30, clue: "def" };       // clue: def = definition | defex = definition + example | mixed
+const CLUE_LABELS = { def: "Definition", defex: "Definition and example", mixed: "Mixed clues" };
+
+function buildClue(id) {
+  const c = BYID[id];
+  if (MOCK.clue === "defex") return mask(c.definition, c.term) + " " + mask(c.example, c.term);
+  if (MOCK.clue === "mixed") { const f = ["definition", "example", "why"][Math.floor(Math.random() * 3)]; return mask(c[f], c.term); }
+  return mask(c.definition, c.term);
+}
+
+function mockSetupView() {
+  const n = poolOf(FILTER).length;
+  const chips = (arr, on, act, key) => arr.map(a => '<button class="chip' + (on(a[0]) ? " on" : "") + '" data-act="' + act + '" data-' + key + '="' + a[0] + '" aria-pressed="' + on(a[0]) + '">' + a[1] + "</button>").join("");
+  const sizes = chips([[25, "25 terms"], [30, "30 terms"], [40, "40 terms"], [94, "All 94"]], k => MOCK.size === k, "mockSize", "n");
+  const clues = chips(Object.entries(CLUE_LABELS), k => MOCK.clue === k, "mockClue", "c");
+  const units = chips([1, 2, 3, 4].map(u => [u, "Unit " + u]), u => FILTER.has(u), "unit", "u");
+  return {
+    html: '<div class="wrap"><div class="top"><div class="brand">Mock test</div><button class="btn small ghost" data-act="home">Back</button></div>' +
+      '<div class="panel list"><p style="margin:0">Each question is a blank followed by a description. Choose the term from the word bank. Every term is used once, like the real test.</p>' +
+      '<div><span class="label">How many terms</span><div class="sizes" style="margin-top:8px">' + sizes + "</div></div>" +
+      '<div><span class="label">What the description shows</span><div class="sizes" style="margin-top:8px">' + clues + "</div></div>" +
+      '<div><span class="label">Units in the bank</span><div class="sizes" style="margin-top:8px">' + units + "</div></div>" +
+      '<p class="muted" style="margin:0;font-size:14px">' + Math.min(MOCK.size, n) + " of " + n + " terms will be drawn at random.</p></div></div>",
+    dock: '<button class="btn primary" data-act="mockStart">Start the test</button>',
+  };
+}
+ACT.mockSize = d => { MOCK.size = +d.n; render(); };
+ACT.mockClue = d => { MOCK.clue = d.c; render(); };
+ACT.mockStart = () => {
+  const ids = shuffle(poolOf(FILTER)).slice(0, MOCK.size).map(c => c.id);
+  startSession("mock", ids, { items: ids.map(id => ({ id, clue: buildClue(id), pick: null })), t0: Date.now() });
+};
+
+const byTerm = (a, b) => BYID[a].term.localeCompare(BYID[b].term);
+function bankIds() { return SES.items.map(it => it.id).sort(byTerm); }
+function usedPicks() { return new Set(SES.items.map(it => it.pick).filter(Boolean)); }
+function bankHtml() {
+  const used = usedPicks();
+  return '<div class="chips">' + bankIds().map(id => '<span class="chip static" style="' + (used.has(id) ? "opacity:.4;text-decoration:line-through" : "") + '">' + esc(BYID[id].term) + "</span>").join("") + "</div>";
+}
+function mockDockHtml() {
+  const n = SES.items.filter(it => it.pick).length;
+  return '<button class="btn primary" data-act="mockGrade">Grade my test<small>' + n + " of " + SES.items.length + " answered</small></button>";
+}
+
+function mockView() {
+  const bank = bankIds();
+  const items = SES.items.map((it, i) => {
+    const opts = '<option value="">choose a term</option>' + bank.map(id => '<option value="' + id + '"' + (it.pick === id ? " selected" : "") + ">" + esc(BYID[id].term) + "</option>").join("");
+    return '<div class="card" style="gap:8px"><div class="row" style="flex-wrap:nowrap"><span class="label">' + (i + 1) + '</span>' +
+      '<select class="blank-sel" id="sel_' + i + '" data-sel="' + i + '" aria-label="Answer for question ' + (i + 1) + '">' + opts + "</select></div>" +
+      '<p class="q" style="margin:0;font-size:16px">' + esc(it.clue) + "</p></div>";
+  }).join("");
+  return {
+    html: '<div class="wrap"><div class="row spread"><button class="btn small ghost" data-act="end">End</button><span class="label">Mock test · ' + SES.items.length + " terms</span></div>" +
+      '<div class="panel"><span class="label">Word bank</span><div id="bank" style="margin-top:8px">' + bankHtml() + "</div></div>" + items + "</div>",
+    dock: mockDockHtml(),
+    after: refreshMock,
+  };
+}
+/* Update the dropdowns and bank in place so the page does not jump while you answer. */
+function refreshMock() {
+  const used = usedPicks();
+  SES.items.forEach((it, i) => {
+    const sel = $("sel_" + i); if (!sel) return;
+    [...sel.options].forEach(o => { o.disabled = !!o.value && used.has(o.value) && o.value !== it.pick; });
+  });
+  const b = $("bank"); if (b) b.innerHTML = bankHtml();
+  if (view === "mock") $("dock").innerHTML = '<div class="dock"><div class="dock-in">' + mockDockHtml() + "</div></div>";
+}
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (view !== "mock" || !t.dataset || t.dataset.sel == null) return;
+  SES.items[+t.dataset.sel].pick = t.value || null;
+  refreshMock();
+});
+
+ACT.mockGrade = () => {
+  const s = SES; let right = 0;
+  s.items.forEach(it => {
+    const ok = it.pick === it.id; it.ok = ok;
+    grade(it.id, ok ? 2 : 0, { cap: 3, xp: ok ? 4 : 0 });
+    if (ok) { s.ok++; right++; } else { s.bad++; s.missed.push(it.id); }
+  });
+  s.right = right; s.mins = Math.max(1, Math.round((Date.now() - s.t0) / 60000));
+  finishSession();
+};
+
+function mockDoneView() {
+  const s = SES, n = s.items.length, pct = Math.round(s.right / n * 100);
+  const verdict = pct >= 95 ? "You are ready. Do one short session in the morning and stop." : pct >= 85 ? "Almost there. Drill the misses below, then take another bank." : "Keep going. The misses below are where the points are.";
+  const wrong = s.items.filter(it => !it.ok), rightOnes = s.items.filter(it => it.ok);
+  const row = (it, bad) => '<div class="card" style="gap:6px"><div class="row spread"><b>' + esc(BYID[it.id].term) + "</b>" +
+    '<button class="btn small" data-act="open" data-id="' + it.id + '">Full card</button></div>' +
+    (bad ? '<span style="color:var(--bad);font-size:14px">' + (it.pick ? "You chose " + esc(BYID[it.pick].term) : "Left blank") + "</span>" : "") +
+    '<p class="muted" style="margin:0;font-size:14px">' + esc(it.clue) + "</p></div>";
+  return {
+    html: '<div class="wrap"><div class="panel"><span class="label">Mock test complete</span><div class="big" style="margin:6px 0">' + pct + "%</div>" +
+      '<div class="muted">' + s.right + " of " + n + " correct · about " + s.mins + " min</div><p style=\"margin:12px 0 0\">" + verdict + "</p></div>" +
+      (wrong.length ? '<h2 style="font-size:18px">Missed (' + wrong.length + ")</h2>" + wrong.map(it => row(it, true)).join("") : "") +
+      (rightOnes.length ? '<details class="panel"><summary>Correct (' + rightOnes.length + ")</summary><div class=\"list\" style=\"margin-top:12px\">" + rightOnes.map(it => '<div class="item"><span>' + esc(BYID[it.id].term) + "</span></div>").join("") + "</div></details>" : "") + "</div>",
+    dock: (s.missed.length ? '<button class="btn" data-act="studyMissed">Drill the misses</button>' : "") +
+          '<button class="btn" data-act="mockAgain">New test</button><button class="btn primary" data-act="home">Back to map</button>',
+  };
+}
+ACT.mockAgain = () => { go("mockSetup"); };
+
+/* ==========================================================================
+   PART 4 — SAVING TO YOUR ACCOUNT, THEN START
+   Progress is always written to this browser first (instant, works offline).
+   When the page has a private per-user database, it is also copied there, so
+   progress survives a cleared browser and follows you between devices.
+   ========================================================================== */
+
+let DB = null, UID = null, dirty = false, syncing = false, syncTimer = null;
+const stateDoc = () => DB.doc("data/users/" + UID + "/state");
+
+function queueSync() {                           // called by save(); batches rapid saves
+  if (!DB || !UID) return;
+  dirty = true; clearTimeout(syncTimer); syncTimer = setTimeout(pushDb, 1500);
+}
+async function pushDb() {
+  if (!DB || !dirty) return;
+  if (syncing) { syncTimer = setTimeout(pushDb, 800); return; }   // one write at a time
+  syncing = true; dirty = false;
+  try { await stateDoc().set({ json: JSON.stringify(S), u: S.u }); syncState = "cloud"; }
+  catch (e) { syncState = "local"; }
+  syncing = false; updateSyncBadge();
+}
+async function initCloud() {
+  try {
+    if (!window.claude || !window.claude.use) return;
+    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    if (!db || !user) return;
+    const id = await user.id();
+    if (!id) return;
+    DB = db; UID = id;
+    const snap = await stateDoc().get();
+    if (snap.exists) {
+      const d = snap.data() || {};
+      if ((+d.u || 0) > S.u) { adopt(JSON.parse(d.json)); saveLocal(); if (view === "home") render(); }   // the account copy is newer
+      else if ((+d.u || 0) < S.u) queueSync();                                                              // this browser is newer
+    } else if (S.u) queueSync();
+    syncState = "cloud"; updateSyncBadge();
+  } catch (e) { syncState = "local"; updateSyncBadge(); }
+}
+
+loadLocal();
+render();
+initCloud();
+
+</script>
+
+</body></html>
