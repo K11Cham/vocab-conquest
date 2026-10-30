@@ -2,11 +2,10 @@
   "name": "vocab-conquest",
   "private": true,
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "dev": "wrangler pages dev public",
+    "deploy": "wrangler pages deploy public --project-name vocab-conquest --branch main --commit-dirty=true"
   },
   "devDependencies": {
     "wrangler": "^4.0.0"
   }
 }
-

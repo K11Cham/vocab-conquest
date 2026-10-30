@@ -18,6 +18,6 @@ npx wrangler login
 npm run deploy
 ```
 
-First deploy creates the `vocab-conquest` project → https://vocab-conquest.pages.dev
+Live at https://vocab-conquest.pages.dev (Cloudflare Pages project `vocab-conquest`).
 
 Custom domain: Cloudflare dashboard → Workers & Pages → vocab-conquest → Custom domains (domain must be on Cloudflare).
